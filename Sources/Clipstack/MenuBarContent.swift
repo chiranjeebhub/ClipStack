@@ -59,6 +59,9 @@ struct MenuBarContent: View {
             Label("Settings…", systemImage: "gearshape")
         }
         .keyboardShortcut(",", modifiers: .command)
+        Button { ReviewPrompt.openWriteReview() } label: {
+            Label("Rate Clipstack…", systemImage: "star")
+        }
         Button { NSApp.terminate(nil) } label: {
             Label("Quit Clipstack", systemImage: "power")
         }

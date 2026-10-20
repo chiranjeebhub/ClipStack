@@ -398,6 +398,8 @@ private struct AboutPane: View {
             Text(version).foregroundStyle(.secondary)
             Text("Everything you copy, kept and searchable.")
                 .padding(.top, 4)
+            Button("Rate Clipstack on the App Store…") { ReviewPrompt.openWriteReview() }
+                .padding(.top, 8)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }

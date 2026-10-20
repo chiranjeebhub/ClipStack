@@ -28,6 +28,7 @@ final class AppEnvironment {
     init() {
         Preferences.migrateLegacyDefaults()
         Preferences.registerDefaults()
+        ReviewPrompt.recordLaunch()
         HistoryPersistence.migrateLegacyDirectory()
         if DemoData.isEnabled { DemoData.resetDirectory() }
         let directory = DemoData.isEnabled ? DemoData.directory : HistoryPersistence.defaultDirectory()
