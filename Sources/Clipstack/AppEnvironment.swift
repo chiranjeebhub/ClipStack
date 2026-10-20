@@ -11,6 +11,7 @@ final class AppEnvironment {
     @ObservationIgnored let pasteService: PasteService
     let syncStatus = CloudSyncStatus()
     @ObservationIgnored let cloudSync: CloudSync
+    @ObservationIgnored private let settingsSync = SettingsSync()
     @ObservationIgnored private(set) lazy var panel = QuickPanelController(environment: self)
     @ObservationIgnored private lazy var settingsWindow = SettingsWindowController(environment: self)
     @ObservationIgnored private var hotKey: HotKey?
@@ -72,7 +73,9 @@ final class AppEnvironment {
             } else {
                 Task { await sync.stop() }
             }
+            settingsSync.setEnabled(syncEnabled)
         }
+        settingsSync.push()
         let combo = Preferences.hotKey
         if combo != registeredCombo {
             hotKey = nil
