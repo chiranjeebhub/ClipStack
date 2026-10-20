@@ -13,10 +13,6 @@ struct ClipboardApp: App {
         } label: {
             Image(nsImage: StackIcon.menuBarGlyph())
         }
-
-        Settings {
-            SettingsView(environment: appDelegate.environment)
-        }
     }
 }
 
@@ -44,7 +40,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     /// Launching the app again while it runs opens Settings, the way back if the menu bar icon is hidden.
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
-        Self.openSettings()
+        environment.showSettings()
         return false
     }
 
@@ -56,10 +52,5 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             }
         }
         onboarding?.show()
-    }
-
-    static func openSettings() {
-        NSApp.activate()
-        NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
     }
 }

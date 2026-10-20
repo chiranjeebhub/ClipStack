@@ -12,6 +12,7 @@ final class AppEnvironment {
     let syncStatus = CloudSyncStatus()
     @ObservationIgnored let cloudSync: CloudSync
     @ObservationIgnored private(set) lazy var panel = QuickPanelController(environment: self)
+    @ObservationIgnored private lazy var settingsWindow = SettingsWindowController(environment: self)
     @ObservationIgnored private var hotKey: HotKey?
     @ObservationIgnored private var registeredCombo: KeyCombo?
     @ObservationIgnored private var defaultsObserver: NSObjectProtocol?
@@ -76,6 +77,10 @@ final class AppEnvironment {
             hotKey = HotKey(combo: combo) { [weak self] in self?.panel.toggle() }
             registeredCombo = combo
         }
+    }
+
+    func showSettings() {
+        settingsWindow.show()
     }
 
     /// Picks up changes from other Macs if it hasn't checked in the last minute.
