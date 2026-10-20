@@ -9,6 +9,7 @@ final class QuickPanelModel {
     let store: HistoryStore
     var query = "" { didSet { selectFirstIfNeeded() } }
     var filter: HistoryFilter = .all { didSet { selectFirstIfNeeded() } }
+    var pinnedOnly = false { didSet { selectFirstIfNeeded() } }
     var selectedID: ClipItem.ID?
     var editingID: ClipItem.ID?
     /// Bumped each time the panel opens so relative times ("2 min ago") refresh.
@@ -24,7 +25,7 @@ final class QuickPanelModel {
         self.store = store
     }
 
-    var visibleItems: [ClipItem] { store.filtered(filter, query: query) }
+    var visibleItems: [ClipItem] { store.filtered(filter, pinnedOnly: pinnedOnly, query: query) }
     var sections: [HistorySection] { HistorySection.group(visibleItems, now: now) }
     var selectedItem: ClipItem? { store.item(id: selectedID) }
 
@@ -37,6 +38,7 @@ final class QuickPanelModel {
     func prepareForShowing() {
         query = ""
         filter = .all
+        pinnedOnly = false
         editingID = nil
         now = Date()
         selectedID = visibleItems.first?.id
@@ -114,6 +116,10 @@ final class QuickPanelModel {
             return true
         case kVK_Tab:
             cycleFilter(forward: !flags.contains(.shift))
+            return true
+        // ←/→ switch filters while the search field is empty; once there's text they move the caret.
+        case kVK_LeftArrow where query.isEmpty, kVK_RightArrow where query.isEmpty:
+            cycleFilter(forward: Int(event.keyCode) == kVK_RightArrow)
             return true
         case kVK_Delete where flags.contains(.command):
             delete()

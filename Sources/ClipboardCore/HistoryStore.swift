@@ -132,10 +132,10 @@ public final class HistoryStore {
         if !reported.isEmpty { onChange?([], reported) }
     }
 
-    public func filtered(_ filter: HistoryFilter = .all, query: String = "") -> [ClipItem] {
+    public func filtered(_ filter: HistoryFilter = .all, pinnedOnly: Bool = false, query: String = "") -> [ClipItem] {
         let terms = query.lowercased().split(whereSeparator: \.isWhitespace)
         return items.filter { item in
-            guard filter.matches(item) else { return false }
+            guard filter.matches(item), !pinnedOnly || item.isPinned else { return false }
             guard !terms.isEmpty else { return true }
             let haystack = item.searchableText.lowercased()
             return terms.allSatisfy { haystack.contains($0) }
