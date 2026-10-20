@@ -74,6 +74,12 @@ final class QuickPanelController {
         environment.refreshFromCloud()
     }
 
+    /// Opens the panel with only pinned items showing.
+    func showPinned() {
+        show()
+        model.pinnedOnly = true
+    }
+
     func hide() {
         removeKeyMonitor()
         panel?.orderOut(nil)

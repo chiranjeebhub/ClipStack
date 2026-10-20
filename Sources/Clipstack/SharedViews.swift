@@ -68,14 +68,17 @@ struct KindBadge: View {
     let item: ClipItem
     let store: HistoryStore
     var selected = false
+    var size: CGFloat = 28
+
+    private var corner: CGFloat { size * 0.22 }
 
     var body: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 6)
+            RoundedRectangle(cornerRadius: corner)
                 .fill(selected ? Color.white.opacity(0.2) : Color.primary.opacity(0.08))
             content
         }
-        .frame(width: 28, height: 28)
+        .frame(width: size, height: size)
     }
 
     @ViewBuilder private var content: some View {
@@ -84,14 +87,14 @@ struct KindBadge: View {
             RoundedRectangle(cornerRadius: 4)
                 .fill(Color(nsColor: NSColor(hex: item.text ?? "") ?? .gray))
                 .overlay(RoundedRectangle(cornerRadius: 4).strokeBorder(.white.opacity(0.3)))
-                .frame(width: 16, height: 16)
+                .frame(width: size * 0.57, height: size * 0.57)
         case .image:
             if let name = item.imageFile, let url = store.persistence?.imageURL(for: name), let image = Thumbnails.image(at: url) {
                 Image(nsImage: image)
                     .resizable()
                     .scaledToFill()
-                    .frame(width: 28, height: 28)
-                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                    .frame(width: size, height: size)
+                    .clipShape(RoundedRectangle(cornerRadius: corner))
             } else {
                 Image(systemName: "photo")
             }
@@ -99,13 +102,13 @@ struct KindBadge: View {
             if let url = item.fileURLs?.first {
                 Image(nsImage: NSWorkspace.shared.icon(forFile: url.path))
                     .resizable()
-                    .frame(width: 22, height: 22)
+                    .frame(width: size * 0.78, height: size * 0.78)
             } else {
                 Image(systemName: "doc")
             }
         default:
             Image(systemName: item.kind.symbolName)
-                .font(.system(size: 13, weight: .medium))
+                .font(.system(size: size * 0.46, weight: .medium))
         }
     }
 }
@@ -140,6 +143,18 @@ extension ClipItem {
         formatter.unitsStyle = .short
         return formatter
     }()
+
+    /// Up to two lines' worth of the item for list rows: text with line breaks folded into spaces,
+    /// or the title for images and files.
+    var rowText: String {
+        switch kind {
+        case .image, .file, .color:
+            return title
+        default:
+            let words = (text ?? "").prefix(400).split(whereSeparator: \.isWhitespace)
+            return words.isEmpty ? title : words.joined(separator: " ")
+        }
+    }
 
     func relativeTime(now: Date) -> String {
         if now.timeIntervalSince(createdAt) < 60 { return "just now" }

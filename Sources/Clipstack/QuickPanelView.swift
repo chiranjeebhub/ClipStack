@@ -131,43 +131,40 @@ private struct HistoryRow: View {
     private var selected: Bool { model.selectedID == item.id }
 
     var body: some View {
-        HStack(spacing: 10) {
-            KindBadge(item: item, store: model.store, selected: selected)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(item.title)
-                    .font(.system(size: 13, design: item.kind == .code ? .monospaced : .default))
-                    .lineLimit(1)
-                    .truncationMode(.tail)
-                HStack(spacing: 5) {
-                    SourceAppIcon(bundleID: item.sourceBundleID, name: item.sourceAppName, size: 13)
-                    Text(item.sourceAppName ?? "Unknown app")
-                        .fontWeight(.semibold)
-                    Text("· \(item.relativeTime(now: model.now))")
-                        .foregroundStyle(selected ? Color.white.opacity(0.85) : Color.secondary)
-                }
-                .font(.system(size: 11))
-                .lineLimit(1)
-            }
-            Spacer(minLength: 4)
+        HStack(spacing: 12) {
+            thumbnail
+            Text(item.rowText)
+                .font(.system(size: 13, design: item.kind == .code ? .monospaced : .default))
+                .lineLimit(2)
+                .truncationMode(.tail)
+                .frame(maxWidth: .infinity, alignment: .leading)
             if item.isPinned {
                 Image(systemName: "pin.fill")
                     .font(.system(size: 10))
                     .accessibilityLabel("Pinned")
             }
-            if let index = model.quickIndex(of: item) {
-                Text("⌘\(index)")
-                    .font(.system(size: 11).monospacedDigit())
-                    .foregroundStyle(selected ? Color.white.opacity(0.85) : Color.secondary)
+            VStack(alignment: .trailing, spacing: 3) {
+                if let index = model.quickIndex(of: item) {
+                    Text("⌘\(index)")
+                        .font(.system(size: 11).monospacedDigit())
+                }
+                Text(item.relativeTime(now: model.now))
+                    .font(.system(size: 10))
             }
+            .lineLimit(1)
+            .foregroundStyle(selected ? Color.white.opacity(0.85) : Color.secondary)
+            .fixedSize()
         }
         .padding(.horizontal, 10)
-        .padding(.vertical, 6)
+        .padding(.vertical, 7)
         .foregroundStyle(selected ? Color.white : Color.primary)
         .background(
             RoundedRectangle(cornerRadius: 8)
                 .fill(selected ? Color.accentColor : Color.clear)
         )
         .contentShape(Rectangle())
+        .accessibilityElement(children: .combine)
+        .accessibilityHint(item.sourceAppName.map { "Copied from \($0)" } ?? "")
         .onTapGesture(count: 2) { model.paste(item) }
         .onTapGesture { model.selectedID = item.id }
         .contextMenu {
@@ -178,6 +175,21 @@ private struct HistoryRow: View {
             Button(item.isPinned ? "Unpin" : "Pin") { model.togglePin(item) }
             Button("Delete", role: .destructive) { model.delete(item) }
         }
+    }
+}
+
+extension HistoryRow {
+    /// The kind thumbnail with the source app's icon as a badge on its bottom-right corner.
+    private var thumbnail: some View {
+        KindBadge(item: item, store: model.store, selected: selected, size: 34)
+            .overlay(alignment: .bottomTrailing) {
+                if item.sourceBundleID != nil || item.sourceAppName != nil {
+                    SourceAppIcon(bundleID: item.sourceBundleID, name: item.sourceAppName, size: 16)
+                        .shadow(color: .black.opacity(0.35), radius: 1.5, y: 0.5)
+                        .offset(x: 5, y: 5)
+                        .help(item.sourceAppName ?? "")
+                }
+            }
     }
 }
 
