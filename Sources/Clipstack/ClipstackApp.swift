@@ -10,6 +10,8 @@ struct ClipstackApp: App {
     var body: some Scene {
         MenuBarExtra(isInserted: $showMenuBarIcon) {
             MenuBarContent(environment: appDelegate.environment)
+                // macOS menus drop label icons unless asked to show them.
+                .labelStyle(.titleAndIcon)
         } label: {
             Image(nsImage: StackIcon.menuBarGlyph())
         }
