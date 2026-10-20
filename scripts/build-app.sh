@@ -26,7 +26,11 @@ echo "▸ Assembling $APP"
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp "$BIN_DIR/Clipstack" "$APP/Contents/MacOS/Clipstack"
-cp Resources/Info.plist "$APP/Contents/Info.plist"
+# Fill in the version numbers that Xcode would otherwise take from project.yml.
+VERSION=$(sed -n 's/.*MARKETING_VERSION: "\(.*\)"/\1/p' project.yml)
+BUILD=$(sed -n 's/.*CURRENT_PROJECT_VERSION: "\(.*\)"/\1/p' project.yml)
+sed -e "s/\$(MARKETING_VERSION)/$VERSION/" -e "s/\$(CURRENT_PROJECT_VERSION)/$BUILD/" \
+    Resources/Info.plist > "$APP/Contents/Info.plist"
 cp "$BUILD_DIR/AppIcon.icns" "$APP/Contents/Resources/AppIcon.icns"
 
 # Ad-hoc signature so macOS remembers the Accessibility permission between launches of the same build.

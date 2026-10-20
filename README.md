@@ -9,7 +9,7 @@ A native macOS clipboard manager, built with SwiftUI and AppKit. It keeps everyt
 - **Rich previews.** Text, code (monospaced), links, images, files and colors each get their own preview. You can edit text items in place with ⌘E.
 - **Pinning.** ⌘P pins an item. Pinned items are never removed by the history limits, and they appear at the top of the menu bar menu with ⌥1–9 shortcuts.
 - **Menu bar menu.** Pinned and recent items, Pause Recording, Clear History and Settings.
-- **Privacy.** Items that password managers mark as concealed or transient are skipped, and you can list apps whose copies are never saved. History stays on your Mac in `~/Library/Application Support/Clipstack`.
+- **Privacy.** Items that password managers mark as concealed or transient are skipped, and you can list apps whose copies are never saved. History stays on your Mac, in `~/Library/Containers/com.chiranjeebhub.clipstack/Data/Library/Application Support/Clipstack` for the signed (sandboxed) app or `~/Library/Application Support/Clipstack` for the ad-hoc build.
 - **iCloud sync.** History and pinned items sync through your private iCloud (CloudKit) database, so they come back after a reinstall and show up on your other Macs. Your settings and shortcut sync the same way. It is off until you turn it on during onboarding or in Settings › Storage.
 - **Settings.** Launch at login, a custom global shortcut, paste behaviour, panel position, how long history is kept and the maximum number of items.
 
@@ -38,6 +38,17 @@ To try changes quickly without bundling, run `swift run Clipstack`. Launch at lo
 
 Run the tests with `swift test`.
 
+### Mac App Store
+
+The signed app runs in the App Sandbox, as the App Store requires. Its first launch moves history and settings from earlier unsandboxed builds into the sandbox container (`Resources/container-migration.plist`). To archive a build for the App Store:
+
+```sh
+scripts/archive-appstore.sh            # exports build/AppStore/Clipstack.pkg
+scripts/archive-appstore.sh --upload   # uploads the build to App Store Connect
+```
+
+Uploading needs an app record for `com.chiranjeebhub.clipstack` in App Store Connect. Before the first App Store release, deploy the CloudKit schema to production in the CloudKit Console, because App Store builds use the production environment.
+
 On first launch, the app asks for Accessibility access. macOS requires this before an app can type ⌘V into other apps. Without it, choosing an item copies it to the clipboard and you paste it yourself.
 
 ## Project layout
@@ -48,4 +59,5 @@ On first launch, the app asks for Accessibility access. macOS requires this befo
 | `Sources/Clipstack` | The app: pasteboard monitor, global shortcut, paste service, quick panel, menu bar menu, Settings and onboarding. |
 | `Sources/MakeIcon` | Renders the app icon to an `.iconset` during the build. |
 | `scripts/build-signed.sh` | Builds the signed app (with iCloud) through the Xcode project generated from `project.yml`. |
+| `scripts/archive-appstore.sh` | Archives the signed app and exports or uploads it for the Mac App Store. |
 | `scripts/build-app.sh` | Builds an ad-hoc-signed `Clipstack.app` with SwiftPM only, without iCloud. |

@@ -15,7 +15,7 @@ settings:
     DEVELOPMENT_TEAM: 4TK5PNR392
     CODE_SIGN_STYLE: Automatic
     MARKETING_VERSION: "1.1"
-    CURRENT_PROJECT_VERSION: "2"
+    CURRENT_PROJECT_VERSION: "3"
 targets:
   ClipstackApp:
     type: application
@@ -25,6 +25,10 @@ targets:
       - path: build/AppIcon.icns
         buildPhase: resources
         optional: true
+      - path: Resources/PrivacyInfo.xcprivacy
+        buildPhase: resources
+      - path: Resources/container-migration.plist
+        buildPhase: resources
     dependencies:
       - package: ClipstackPackage
         product: ClipboardCore

@@ -10,7 +10,7 @@ public final class HistoryPersistence: @unchecked Sendable {
         try? FileManager.default.createDirectory(at: imagesDirectory, withIntermediateDirectories: true)
     }
 
-    /// `~/Library/Application Support/Clipstack`
+    /// `~/Library/Application Support/Clipstack`, inside the app's container when sandboxed.
     public static func defaultDirectory() -> URL {
         let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
         return base.appendingPathComponent("Clipstack", isDirectory: true)
