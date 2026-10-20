@@ -246,7 +246,8 @@ actor CloudSync: CKSyncEngineDelegate {
         saveSystemFields()
         guard !items.isEmpty || !deleted.isEmpty else { return }
         let store = self.store
-        await MainActor.run { store.applyRemote(items, deletedIDs: deleted) }
+        let fetchedItems = items, fetchedDeletions = deleted
+        await MainActor.run { store.applyRemote(fetchedItems, deletedIDs: fetchedDeletions) }
     }
 
     private func handleSent(_ sent: CKSyncEngine.Event.SentRecordZoneChanges, engine: CKSyncEngine) async {
@@ -298,7 +299,8 @@ actor CloudSync: CKSyncEngineDelegate {
         }
         if !newerOnServer.isEmpty {
             let store = self.store
-            await MainActor.run { store.applyRemote(newerOnServer, deletedIDs: []) }
+            let serverItems = newerOnServer
+            await MainActor.run { store.applyRemote(serverItems, deletedIDs: []) }
         }
     }
 
