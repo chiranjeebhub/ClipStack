@@ -29,10 +29,12 @@ final class AppEnvironment {
         Preferences.migrateLegacyDefaults()
         Preferences.registerDefaults()
         HistoryPersistence.migrateLegacyDirectory()
-        store = HistoryStore(persistence: HistoryPersistence(directory: HistoryPersistence.defaultDirectory()))
+        if DemoData.isEnabled { DemoData.resetDirectory() }
+        let directory = DemoData.isEnabled ? DemoData.directory : HistoryPersistence.defaultDirectory()
+        store = HistoryStore(persistence: HistoryPersistence(directory: directory))
+        if DemoData.isEnabled { DemoData.seed(store) }
         monitor = PasteboardMonitor(store: store)
         pasteService = PasteService(store: store, monitor: monitor)
-        let directory = HistoryPersistence.defaultDirectory()
         cloudSync = CloudSync(
             store: store, status: syncStatus,
             directory: directory, imagesDirectory: directory.appendingPathComponent("images", isDirectory: true)
@@ -46,7 +48,8 @@ final class AppEnvironment {
 
     func start() {
         applyPreferences()
-        monitor.start()
+        // The screenshot demo shows sample items only, so nothing copied meanwhile is recorded.
+        if !DemoData.isEnabled { monitor.start() }
         // Backstop for missed push notifications from CloudKit.
         let syncTimer = Timer(timeInterval: 300, repeats: true) { [weak self] _ in
             MainActor.assumeIsolated { self?.refreshFromCloud() }
@@ -65,8 +68,9 @@ final class AppEnvironment {
         if store.retention != Preferences.retention { store.retention = Preferences.retention }
         if store.maxItems != Preferences.maxItems { store.maxItems = Preferences.maxItems }
         if isPaused != Preferences.isPaused { isPaused = Preferences.isPaused }
-        if syncEnabled != Preferences.iCloudSync {
-            syncEnabled = Preferences.iCloudSync
+        let wantsSync = Preferences.iCloudSync && !DemoData.isEnabled
+        if syncEnabled != wantsSync {
+            syncEnabled = wantsSync
             let sync = cloudSync
             if syncEnabled {
                 Task { await sync.start() }
@@ -75,7 +79,7 @@ final class AppEnvironment {
             }
             settingsSync.setEnabled(syncEnabled)
         }
-        settingsSync.push()
+        if !DemoData.isEnabled { settingsSync.push() }
         let combo = Preferences.hotKey
         if combo != registeredCombo {
             hotKey = nil

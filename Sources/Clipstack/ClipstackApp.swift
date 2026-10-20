@@ -38,6 +38,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // Also show it again when auto-paste is on but Accessibility access is missing, which happens
         // after a reinstall or re-sign because macOS ties the permission to the app's signature.
         let firstLaunch = !UserDefaults.standard.bool(forKey: PrefKey.hasCompletedOnboarding)
+        if DemoData.isEnabled { return }
         if firstLaunch || (Preferences.pasteDirectly && !PasteService.hasAccessibilityAccess) {
             showOnboarding()
         }
