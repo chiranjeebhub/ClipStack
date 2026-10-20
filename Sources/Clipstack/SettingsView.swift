@@ -324,7 +324,7 @@ private struct StoragePane: View {
             } header: {
                 Text("iCloud")
             } footer: {
-                Text("Uses the Apple Account this Mac is signed into and stays in your private iCloud database. Passwords and items from ignored apps are never saved.")
+                Text("Syncs your history, pins, settings and shortcut. Uses the Apple Account this Mac is signed into and stays in your private iCloud database. Passwords and items from ignored apps are never saved.")
             }
             Section {
                 HStack {

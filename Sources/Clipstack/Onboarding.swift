@@ -89,7 +89,7 @@ struct OnboardingView: View {
                     }
                 }
                 if Self.showsSyncStep {
-                    StepRow(number: 4, done: iCloudSync, title: "Sync with iCloud", subtitle: "Restores your history and pins after a reinstall or on another Mac") {
+                    StepRow(number: 4, done: iCloudSync, title: "Sync with iCloud", subtitle: "Restores your history, pins and settings after a reinstall or on another Mac") {
                         if !iCloudSync {
                             Button("Turn On") { iCloudSync = true }
                                 .controlSize(.small)
