@@ -26,11 +26,11 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
         let hosting = NSHostingController(rootView: SettingsView(environment: environment))
         hosting.sceneBridgingOptions = [.title, .toolbars]
         let window = NSWindow(contentViewController: hosting)
-        window.title = "Clipboard Settings"
+        window.title = "Clipstack Settings"
         window.styleMask = [.titled, .closable, .miniaturizable, .fullSizeContentView]
         window.isReleasedWhenClosed = false
         window.delegate = self
-        window.setFrameAutosaveName("ClipboardSettings")
+        window.setFrameAutosaveName("ClipstackSettings")
         window.center()
         self.window = window
         return window

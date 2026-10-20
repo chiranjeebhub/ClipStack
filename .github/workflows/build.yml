@@ -17,14 +17,14 @@ jobs:
       - name: Build app bundle
         run: scripts/build-app.sh
       - name: Zip app
-        run: cd build && ditto -c -k --keepParent Clipboard.app Clipboard.zip
+        run: cd build && ditto -c -k --keepParent Clipstack.app Clipstack.zip
       - uses: actions/upload-artifact@v4
         with:
-          name: Clipboard
-          path: build/Clipboard.zip
+          name: Clipstack
+          path: build/Clipstack.zip
       - name: Check the Xcode project (signed build) compiles
         run: |
           brew install xcodegen
           xcodegen generate
-          xcodebuild -project Clipboard.xcodeproj -scheme Clipboard -configuration Release \
+          xcodebuild -project Clipstack.xcodeproj -scheme Clipstack -configuration Release \
             -derivedDataPath build/DerivedData CODE_SIGNING_ALLOWED=NO build

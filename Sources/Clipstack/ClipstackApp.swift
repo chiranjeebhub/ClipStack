@@ -3,7 +3,7 @@ import ClipboardCore
 import SwiftUI
 
 @main
-struct ClipboardApp: App {
+struct ClipstackApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @AppStorage(PrefKey.showMenuBarIcon) private var showMenuBarIcon = true
 

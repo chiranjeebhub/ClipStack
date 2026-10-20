@@ -25,7 +25,9 @@ final class AppEnvironment {
     }
 
     init() {
+        Preferences.migrateLegacyDefaults()
         Preferences.registerDefaults()
+        HistoryPersistence.migrateLegacyDirectory()
         store = HistoryStore(persistence: HistoryPersistence(directory: HistoryPersistence.defaultDirectory()))
         monitor = PasteboardMonitor(store: store)
         pasteService = PasteService(store: store, monitor: monitor)

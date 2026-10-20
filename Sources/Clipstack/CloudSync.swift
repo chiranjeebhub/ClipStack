@@ -24,7 +24,7 @@ final class CloudSyncStatus {
 ///
 /// Requires the app to be signed with the iCloud entitlement (see `scripts/build-signed.sh`).
 actor CloudSync: CKSyncEngineDelegate {
-    static let containerID = "iCloud.com.chiranjeebhub.clipboard"
+    static let containerID = "iCloud.com.chiranjeebhub.clipstack"
     private static let zoneID = CKRecordZone.ID(zoneName: "History", ownerName: CKCurrentUserDefaultName)
     private static let recordType = "ClipItem"
     /// CloudKit records hold at most 1 MB of fields (assets aside); larger text isn't synced.

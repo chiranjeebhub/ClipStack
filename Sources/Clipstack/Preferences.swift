@@ -34,6 +34,23 @@ enum Preferences {
         "com.apple.Passwords",
     ]
 
+    /// Copies settings saved while the app was called "Clipboard" (a different bundle ID), once.
+    static func migrateLegacyDefaults() {
+        let migratedKey = "migratedLegacyDefaults"
+        guard !defaults.bool(forKey: migratedKey) else { return }
+        defaults.set(true, forKey: migratedKey)
+        guard let legacy = UserDefaults(suiteName: "com.chiranjeebhub.clipboard") else { return }
+        let keys = [
+            PrefKey.showMenuBarIcon, PrefKey.pasteDirectly, PrefKey.alwaysPlainText, PrefKey.panelPosition,
+            PrefKey.retentionDays, PrefKey.maxItems, PrefKey.ignoreConcealed, PrefKey.ignoreTransient,
+            PrefKey.isPaused, PrefKey.ignoredApps, PrefKey.hotKeyCode, PrefKey.hotKeyModifiers,
+            PrefKey.hasCompletedOnboarding, PrefKey.iCloudSync,
+        ]
+        for key in keys {
+            if let value = legacy.object(forKey: key) { defaults.set(value, forKey: key) }
+        }
+    }
+
     static func registerDefaults() {
         UserDefaults.standard.register(defaults: [
             PrefKey.showMenuBarIcon: true,
