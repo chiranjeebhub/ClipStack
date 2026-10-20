@@ -5,6 +5,8 @@ options:
   deploymentTarget:
     macOS: "14.0"
   createIntermediateGroups: true
+  # Keeps the generated project readable by Xcode 15 as well as newer versions.
+  projectFormat: xcode15_0
 packages:
   ClipboardPackage:
     path: .
