@@ -16,6 +16,7 @@ enum PrefKey {
     static let hotKeyCode = "hotKeyCode"
     static let hotKeyModifiers = "hotKeyModifiers"
     static let hasCompletedOnboarding = "hasCompletedOnboarding"
+    static let iCloudSync = "iCloudSync"
 }
 
 enum PanelPosition: String, CaseIterable, Identifiable {
@@ -48,6 +49,7 @@ enum Preferences {
             PrefKey.hotKeyCode: Int(KeyCombo.default.keyCode),
             PrefKey.hotKeyModifiers: Int(KeyCombo.default.modifiers.rawValue),
             PrefKey.hasCompletedOnboarding: false,
+            PrefKey.iCloudSync: true,
         ])
     }
 
@@ -62,6 +64,8 @@ enum Preferences {
     }
     static var retention: Retention { Retention(rawValue: defaults.integer(forKey: PrefKey.retentionDays)) ?? .month }
     static var maxItems: Int { max(50, defaults.integer(forKey: PrefKey.maxItems)) }
+
+    static var iCloudSync: Bool { defaults.bool(forKey: PrefKey.iCloudSync) }
 
     static var isPaused: Bool {
         get { defaults.bool(forKey: PrefKey.isPaused) }

@@ -106,6 +106,87 @@ final class HistoryStoreTests: XCTestCase {
         XCTAssertEqual(sections.map(\.title), ["Today", "Yesterday", "Earlier"])
     }
 
+    func testChangesAreReported() {
+        let store = makeStore()
+        var saved: [UUID] = [], deleted: [UUID] = []
+        store.onChange = { saved += $0; deleted += $1 }
+        store.add(text("one"))
+        let id = store.items[0].id
+        store.togglePin(id: id)
+        store.delete(id: id)
+        XCTAssertEqual(saved, [id, id])
+        XCTAssertEqual(deleted, [id])
+    }
+
+    func testPruneReportsDeletions() {
+        let store = makeStore()
+        store.maxItems = 1
+        var deleted: [UUID] = []
+        store.onChange = { deleted += $1 }
+        store.add(text("old"))
+        let oldID = store.items[0].id
+        store.add(text("new"))
+        XCTAssertEqual(deleted, [oldID])
+    }
+
+    func testRemoteNewerVersionWins() {
+        let store = makeStore()
+        store.add(text("note"))
+        var remote = store.items[0]
+        remote.isPinned = true
+        remote.modifiedAt = now.addingTimeInterval(60)
+        store.applyRemote([remote], deletedIDs: [])
+        XCTAssertTrue(store.items[0].isPinned)
+
+        var stale = remote
+        stale.isPinned = false
+        stale.modifiedAt = now.addingTimeInterval(-60)
+        store.applyRemote([stale], deletedIDs: [])
+        XCTAssertTrue(store.items[0].isPinned)
+    }
+
+    func testRemoteInsertsSortedAndDeletes() {
+        let store = makeStore()
+        store.add(text("local"))
+        let localID = store.items[0].id
+        let older = text("from other mac", ago: 300)
+        store.applyRemote([older], deletedIDs: [])
+        XCTAssertEqual(store.items.map(\.text), ["local", "from other mac"])
+
+        var reported: [UUID] = []
+        store.onChange = { _, deleted in reported += deleted }
+        store.applyRemote([], deletedIDs: [localID])
+        XCTAssertEqual(store.items.map(\.text), ["from other mac"])
+        XCTAssertTrue(reported.isEmpty, "remote deletions aren't echoed back")
+    }
+
+    func testRemoteDuplicateKeepsNewestCopy() {
+        let store = makeStore()
+        store.add(text("same", ago: 100))
+        let localID = store.items[0].id
+        var deleted: [UUID] = []
+        store.onChange = { deleted += $1 }
+
+        let newer = text("same")
+        store.applyRemote([newer], deletedIDs: [])
+        XCTAssertEqual(store.items.map(\.id), [newer.id])
+        XCTAssertEqual(deleted, [localID])
+
+        let older = text("same", ago: 500)
+        store.applyRemote([older], deletedIDs: [])
+        XCTAssertEqual(store.items.map(\.id), [newer.id])
+        XCTAssertEqual(deleted, [localID, older.id])
+    }
+
+    func testDecodesHistoryWithoutModifiedAt() throws {
+        let json = #"[{"id":"5D7A7C55-6B39-4C64-9F0B-2F7F5C1A0001","kind":"text","text":"hi","createdAt":"2026-10-20T08:00:00Z","isPinned":false,"contentHash":"text:hi"}]"#
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        let items = try decoder.decode([ClipItem].self, from: Data(json.utf8))
+        XCTAssertNil(items[0].modifiedAt)
+        XCTAssertEqual(items[0].lastModified, items[0].createdAt)
+    }
+
     func testTitles() {
         XCTAssertEqual(text("  first line\nsecond").title, "first line")
         let image = ClipItem(kind: .image, imageWidth: 1440, imageHeight: 900, contentHash: "i")

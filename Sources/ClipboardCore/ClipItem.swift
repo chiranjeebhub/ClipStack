@@ -31,6 +31,9 @@ public struct ClipItem: Identifiable, Codable, Equatable, Hashable, Sendable {
     public var sourceBundleID: String?
     public var sourceAppName: String?
     public var createdAt: Date
+    /// Last time the item was copied again, pinned, unpinned or edited. Sync keeps the newest version.
+    /// Optional so history saved before sync existed still decodes.
+    public var modifiedAt: Date?
     public var isPinned: Bool
     /// Stable fingerprint of the content, used to collapse repeated copies into one entry.
     public var contentHash: String
@@ -47,6 +50,7 @@ public struct ClipItem: Identifiable, Codable, Equatable, Hashable, Sendable {
         sourceBundleID: String? = nil,
         sourceAppName: String? = nil,
         createdAt: Date = Date(),
+        modifiedAt: Date? = nil,
         isPinned: Bool = false,
         contentHash: String
     ) {
@@ -61,9 +65,12 @@ public struct ClipItem: Identifiable, Codable, Equatable, Hashable, Sendable {
         self.sourceBundleID = sourceBundleID
         self.sourceAppName = sourceAppName
         self.createdAt = createdAt
+        self.modifiedAt = modifiedAt
         self.isPinned = isPinned
         self.contentHash = contentHash
     }
+
+    public var lastModified: Date { modifiedAt ?? createdAt }
 
     /// One-line summary shown in lists and menus.
     public var title: String {

@@ -22,3 +22,9 @@ jobs:
         with:
           name: Clipboard
           path: build/Clipboard.zip
+      - name: Check the Xcode project (signed build) compiles
+        run: |
+          brew install xcodegen
+          xcodegen generate
+          xcodebuild -project Clipboard.xcodeproj -scheme Clipboard -configuration Release \
+            -derivedDataPath build/DerivedData CODE_SIGNING_ALLOWED=NO build

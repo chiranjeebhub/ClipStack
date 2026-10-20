@@ -33,6 +33,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         environment.start()
+        if CloudSync.isEntitled {
+            // Lets CloudKit tell this Mac when another one changed the history.
+            NSApp.registerForRemoteNotifications()
+        }
         if !UserDefaults.standard.bool(forKey: PrefKey.hasCompletedOnboarding) {
             showOnboarding()
         }
