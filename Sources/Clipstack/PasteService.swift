@@ -13,6 +13,8 @@ final class PasteService {
         self.monitor = monitor
     }
 
+    private static var didPromptForAccess = false
+
     nonisolated static var hasAccessibilityAccess: Bool { AXIsProcessTrusted() }
 
     nonisolated static func requestAccessibilityAccess() {
@@ -63,7 +65,16 @@ final class PasteService {
     /// Copies the item and, if the user allowed it, pastes it into `target` (or whichever app is frontmost).
     func paste(_ item: ClipItem, plainText: Bool, into target: NSRunningApplication?) {
         copy(item, plainText: plainText || Preferences.alwaysPlainText)
-        guard Preferences.pasteDirectly, Self.hasAccessibilityAccess else { return }
+        guard Preferences.pasteDirectly else { return }
+        guard Self.hasAccessibilityAccess else {
+            // Without Accessibility access macOS drops the ⌘V keystroke, so the item is only copied.
+            // Ask once per launch so a missing permission (e.g. after a reinstall) isn't silent.
+            if !Self.didPromptForAccess {
+                Self.didPromptForAccess = true
+                Self.requestAccessibilityAccess()
+            }
+            return
+        }
         if let target, target != NSRunningApplication.current, !target.isActive {
             target.activate()
         }
