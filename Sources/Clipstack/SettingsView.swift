@@ -291,7 +291,7 @@ private struct IgnoredAppsPane: View {
 private struct StoragePane: View {
     let environment: AppEnvironment
     @AppStorage(PrefKey.maxItems) private var maxItems = 1000
-    @AppStorage(PrefKey.iCloudSync) private var iCloudSync = true
+    @AppStorage(PrefKey.iCloudSync) private var iCloudSync = false
     @State private var diskUsage: Int64 = 0
 
     var body: some View {

@@ -10,7 +10,7 @@ A native macOS clipboard manager, built with SwiftUI and AppKit. It keeps everyt
 - **Pinning.** ⌘P pins an item. Pinned items are never removed by the history limits, and they appear at the top of the menu bar menu with ⌥1–9 shortcuts.
 - **Menu bar menu.** Pinned and recent items, Pause Recording, Clear History and Settings.
 - **Privacy.** Items that password managers mark as concealed or transient are skipped, and you can list apps whose copies are never saved. History stays on your Mac in `~/Library/Application Support/Clipstack`.
-- **iCloud sync.** History and pinned items sync through your private iCloud (CloudKit) database, so they come back after a reinstall and show up on your other Macs. It can be turned off in Settings › Storage.
+- **iCloud sync.** History and pinned items sync through your private iCloud (CloudKit) database, so they come back after a reinstall and show up on your other Macs. It is off until you turn it on during onboarding or in Settings › Storage.
 - **Settings.** Launch at login, a custom global shortcut, paste behaviour, panel position, how long history is kept and the maximum number of items.
 
 ## Requirements

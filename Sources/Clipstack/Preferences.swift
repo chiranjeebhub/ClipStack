@@ -66,7 +66,7 @@ enum Preferences {
             PrefKey.hotKeyCode: Int(KeyCombo.default.keyCode),
             PrefKey.hotKeyModifiers: Int(KeyCombo.default.modifiers.rawValue),
             PrefKey.hasCompletedOnboarding: false,
-            PrefKey.iCloudSync: true,
+            PrefKey.iCloudSync: false,
         ])
     }
 

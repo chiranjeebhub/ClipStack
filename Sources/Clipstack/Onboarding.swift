@@ -16,7 +16,7 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
     func show() {
         if window == nil {
             let window = NSWindow(
-                contentRect: NSRect(x: 0, y: 0, width: 520, height: 520),
+                contentRect: NSRect(x: 0, y: 0, width: 520, height: OnboardingView.height),
                 styleMask: [.titled, .closable, .fullSizeContentView],
                 backing: .buffered,
                 defer: false
@@ -29,11 +29,16 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
             window.center()
             self.window = window
         }
-        NSApp.activate()
+        // A menu bar app launched for the first time isn't frontmost, and macOS may decline a polite
+        // activation request, so become a regular app while onboarding is open and force the window up.
+        NSApp.setActivationPolicy(.regular)
+        NSApp.activate(ignoringOtherApps: true)
         window?.makeKeyAndOrderFront(nil)
+        window?.orderFrontRegardless()
     }
 
     func windowWillClose(_ notification: Notification) {
+        NSApp.setActivationPolicy(.accessory)
         onFinish()
     }
 }
@@ -43,6 +48,9 @@ struct OnboardingView: View {
     let close: () -> Void
     @State private var trusted = PasteService.hasAccessibilityAccess
     @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
+    @AppStorage(PrefKey.iCloudSync) private var iCloudSync = false
+    private static let showsSyncStep = CloudSync.isEntitled
+    static var height: CGFloat { showsSyncStep ? 590 : 520 }
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     var body: some View {
@@ -58,7 +66,7 @@ struct OnboardingView: View {
                 .frame(maxWidth: 380)
 
             VStack(spacing: 8) {
-                StepRow(number: 1, done: true, title: "Record clipboard history", subtitle: CloudSync.isEntitled ? "Kept on this Mac and synced with your iCloud" : "Stored only on this Mac") {
+                StepRow(number: 1, done: true, title: "Record clipboard history", subtitle: "Stored on this Mac") {
                     EmptyView()
                 }
                 StepRow(number: 2, done: trusted, title: "Allow Accessibility access", subtitle: "Lets Clipstack paste straight into the app you’re using") {
@@ -80,6 +88,14 @@ struct OnboardingView: View {
                         .controlSize(.small)
                     }
                 }
+                if Self.showsSyncStep {
+                    StepRow(number: 4, done: iCloudSync, title: "Sync with iCloud", subtitle: "Restores your history and pins after a reinstall or on another Mac") {
+                        if !iCloudSync {
+                            Button("Turn On") { iCloudSync = true }
+                                .controlSize(.small)
+                        }
+                    }
+                }
             }
             .padding(.top, 6)
 
@@ -95,7 +111,7 @@ struct OnboardingView: View {
         }
         .padding(.horizontal, 32)
         .padding(.bottom, 24)
-        .frame(width: 520, height: 520)
+        .frame(width: 520, height: Self.height)
         .onReceive(timer) { _ in trusted = PasteService.hasAccessibilityAccess }
     }
 }
