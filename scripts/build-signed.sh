@@ -33,6 +33,7 @@ xcodebuild \
     -configuration Release \
     -derivedDataPath "$BUILD_DIR/DerivedData" \
     -allowProvisioningUpdates \
+    -allowProvisioningDeviceRegistration \
     build | (command -v xcpretty >/dev/null && xcpretty || cat)
 
 rm -rf "$BUILD_DIR/Clipstack.app"

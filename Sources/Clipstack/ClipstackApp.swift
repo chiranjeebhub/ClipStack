@@ -33,7 +33,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             // Lets CloudKit tell this Mac when another one changed the history.
             NSApp.registerForRemoteNotifications()
         }
-        if !UserDefaults.standard.bool(forKey: PrefKey.hasCompletedOnboarding) {
+        // Also show it again when auto-paste is on but Accessibility access is missing, which happens
+        // after a reinstall or re-sign because macOS ties the permission to the app's signature.
+        let firstLaunch = !UserDefaults.standard.bool(forKey: PrefKey.hasCompletedOnboarding)
+        if firstLaunch || (Preferences.pasteDirectly && !PasteService.hasAccessibilityAccess) {
             showOnboarding()
         }
     }

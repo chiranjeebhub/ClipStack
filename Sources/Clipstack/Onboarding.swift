@@ -58,7 +58,7 @@ struct OnboardingView: View {
                 .frame(maxWidth: 380)
 
             VStack(spacing: 8) {
-                StepRow(number: 1, done: true, title: "Record clipboard history", subtitle: "Stored only on this Mac") {
+                StepRow(number: 1, done: true, title: "Record clipboard history", subtitle: CloudSync.isEntitled ? "Kept on this Mac and synced with your iCloud" : "Stored only on this Mac") {
                     EmptyView()
                 }
                 StepRow(number: 2, done: trusted, title: "Allow Accessibility access", subtitle: "Lets Clipstack paste straight into the app you’re using") {
