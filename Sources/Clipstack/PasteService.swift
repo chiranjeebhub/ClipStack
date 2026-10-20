@@ -63,7 +63,12 @@ final class PasteService {
     /// Copies the item and, if the user allowed it, pastes it into `target` (or whichever app is frontmost).
     func paste(_ item: ClipItem, plainText: Bool, into target: NSRunningApplication?) {
         copy(item, plainText: plainText || Preferences.alwaysPlainText)
-        guard Preferences.pasteDirectly, Self.hasAccessibilityAccess else { return }
+        guard Preferences.pasteDirectly else { return }
+        guard Self.hasAccessibilityAccess else {
+            // Without access the item is only copied; ask again so the missing paste isn't silent.
+            Self.requestAccessibilityAccess()
+            return
+        }
         if let target, target != NSRunningApplication.current, !target.isActive {
             target.activate()
         }
