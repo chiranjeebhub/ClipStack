@@ -1,0 +1,86 @@
+import AppKit
+import ApplicationServices
+import ClipboardCore
+
+/// Puts a history item back on the pasteboard and, when allowed, types ⌘V into the frontmost app.
+@MainActor
+final class PasteService {
+    private let store: HistoryStore
+    private let monitor: PasteboardMonitor
+
+    init(store: HistoryStore, monitor: PasteboardMonitor) {
+        self.store = store
+        self.monitor = monitor
+    }
+
+    nonisolated static var hasAccessibilityAccess: Bool { AXIsProcessTrusted() }
+
+    nonisolated static func requestAccessibilityAccess() {
+        let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary
+        _ = AXIsProcessTrustedWithOptions(options)
+    }
+
+    nonisolated static func openAccessibilitySettings() {
+        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
+            NSWorkspace.shared.open(url)
+        }
+    }
+
+    /// Copies the item to the clipboard.
+    func copy(_ item: ClipItem, plainText: Bool) {
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        switch item.kind {
+        case .image:
+            if let name = item.imageFile, let url = store.persistence?.imageURL(for: name), let image = NSImage(contentsOf: url) {
+                pasteboard.writeObjects([image])
+            }
+        case .file:
+            let urls = (item.fileURLs ?? []) as [NSURL]
+            if plainText {
+                pasteboard.setString((item.fileURLs ?? []).map(\.path).joined(separator: "\n"), forType: .string)
+            } else {
+                pasteboard.writeObjects(urls)
+            }
+        case .link:
+            let text = item.text ?? ""
+            if !plainText, let url = URL(string: text) {
+                pasteboard.writeObjects([url as NSURL])
+            }
+            pasteboard.setString(text, forType: .string)
+        case .text, .code, .color:
+            let text = item.text ?? ""
+            if !plainText, let rtf = item.rtf {
+                pasteboard.declareTypes([.rtf, .string], owner: nil)
+                pasteboard.setData(rtf, forType: .rtf)
+            }
+            pasteboard.setString(text, forType: .string)
+        }
+        monitor.skipCurrentContents()
+        store.touch(id: item.id)
+    }
+
+    /// Copies the item and, if the user allowed it, pastes it into `target` (or whichever app is frontmost).
+    func paste(_ item: ClipItem, plainText: Bool, into target: NSRunningApplication?) {
+        copy(item, plainText: plainText || Preferences.alwaysPlainText)
+        guard Preferences.pasteDirectly, Self.hasAccessibilityAccess else { return }
+        if let target, target != NSRunningApplication.current, !target.isActive {
+            target.activate()
+        }
+        // Give the target app a moment to become key before the keystroke arrives.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
+            Self.postCommandV()
+        }
+    }
+
+    nonisolated private static func postCommandV() {
+        let source = CGEventSource(stateID: .combinedSessionState)
+        let vKey: CGKeyCode = 9
+        let down = CGEvent(keyboardEventSource: source, virtualKey: vKey, keyDown: true)
+        let up = CGEvent(keyboardEventSource: source, virtualKey: vKey, keyDown: false)
+        down?.flags = .maskCommand
+        up?.flags = .maskCommand
+        down?.post(tap: .cghidEventTap)
+        up?.post(tap: .cghidEventTap)
+    }
+}
