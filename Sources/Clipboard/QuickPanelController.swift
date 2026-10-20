@@ -71,6 +71,7 @@ final class QuickPanelController {
         position(panel)
         panel.makeKeyAndOrderFront(nil)
         installKeyMonitor()
+        environment.refreshFromCloud()
     }
 
     func hide() {

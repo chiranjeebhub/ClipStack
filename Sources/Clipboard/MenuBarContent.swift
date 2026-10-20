@@ -41,7 +41,7 @@ struct MenuBarContent: View {
 
         Divider()
 
-        SettingsLink { Text("Settings…") }
+        Button("Settings…") { environment.showSettings() }
             .keyboardShortcut(",", modifiers: .command)
         Button("Quit Clipboard") { NSApp.terminate(nil) }
             .keyboardShortcut("q", modifiers: .command)

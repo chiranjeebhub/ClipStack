@@ -291,6 +291,7 @@ private struct IgnoredAppsPane: View {
 private struct StoragePane: View {
     let environment: AppEnvironment
     @AppStorage(PrefKey.maxItems) private var maxItems = 1000
+    @AppStorage(PrefKey.iCloudSync) private var iCloudSync = true
     @State private var diskUsage: Int64 = 0
 
     var body: some View {
@@ -305,6 +306,25 @@ private struct StoragePane: View {
                 }
             } footer: {
                 Text("Pinned items don’t count towards the limit.")
+            }
+            Section {
+                Toggle(isOn: $iCloudSync) {
+                    Text("Sync with iCloud")
+                    Text("Your history and pinned items come back after a reinstall and appear on your other Macs.")
+                }
+                if iCloudSync {
+                    LabeledContent("Status") {
+                        HStack(spacing: 8) {
+                            SyncStatusLabel(state: environment.syncStatus.state)
+                            Button("Sync Now") { environment.syncNow() }
+                                .disabled(environment.syncStatus.state == .syncing)
+                        }
+                    }
+                }
+            } header: {
+                Text("iCloud")
+            } footer: {
+                Text("Uses the Apple Account this Mac is signed into and stays in your private iCloud database. Passwords and items from ignored apps are never saved.")
             }
             Section {
                 HStack {
@@ -327,6 +347,38 @@ private struct StoragePane: View {
     private func refresh() {
         environment.store.persistence?.flush()
         diskUsage = environment.store.persistence?.diskUsage() ?? 0
+    }
+}
+
+@MainActor
+private struct SyncStatusLabel: View {
+    let state: CloudSyncStatus.State
+
+    var body: some View {
+        switch state {
+        case .off:
+            Text("Off").foregroundStyle(.secondary)
+        case .unavailable(let reason):
+            Label(reason, systemImage: "exclamationmark.icloud")
+                .foregroundStyle(.orange)
+                .lineLimit(2)
+        case .syncing:
+            HStack(spacing: 6) {
+                ProgressView().controlSize(.small)
+                Text("Syncing…")
+            }
+        case .upToDate(let date):
+            Label {
+                Text("Up to date · \(date.formatted(date: .omitted, time: .shortened))")
+            } icon: {
+                Image(systemName: "checkmark.icloud")
+            }
+            .foregroundStyle(.secondary)
+        case .failed(let message):
+            Label(message, systemImage: "xmark.icloud")
+                .foregroundStyle(.red)
+                .lineLimit(2)
+        }
     }
 }
 
