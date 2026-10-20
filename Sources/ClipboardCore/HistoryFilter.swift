@@ -1,8 +1,9 @@
 import Foundation
 
-/// The type filters shown at the top of the quick panel.
+/// The type filters shown at the top of the quick panel. Pinned is a separate toggle, so it
+/// combines with any type ("pinned links").
 public enum HistoryFilter: String, CaseIterable, Identifiable, Sendable {
-    case all, text, links, images, files, pinned
+    case all, text, links, images, files
 
     public var id: String { rawValue }
 
@@ -13,7 +14,6 @@ public enum HistoryFilter: String, CaseIterable, Identifiable, Sendable {
         case .links: return "Links"
         case .images: return "Images"
         case .files: return "Files"
-        case .pinned: return "Pinned"
         }
     }
 
@@ -24,7 +24,6 @@ public enum HistoryFilter: String, CaseIterable, Identifiable, Sendable {
         case .links: return item.kind == .link
         case .images: return item.kind == .image
         case .files: return item.kind == .file
-        case .pinned: return item.isPinned
         }
     }
 }

@@ -36,14 +36,8 @@ struct QuickPanelView: View {
                 .textFieldStyle(.plain)
                 .font(.system(size: 20))
                 .focused($searchFocused)
-            Picker("Filter", selection: $model.filter) {
-                ForEach(HistoryFilter.allCases) { filter in
-                    Text(filter.label).tag(filter)
-                }
-            }
-            .pickerStyle(.segmented)
-            .labelsHidden()
-            .fixedSize()
+            FilterBar(selection: $model.filter)
+            PinnedToggle(isOn: $model.pinnedOnly)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 14)
@@ -52,6 +46,7 @@ struct QuickPanelView: View {
     private var footer: some View {
         HStack(spacing: 18) {
             Text("↑↓ Navigate")
+            Text("←→ Filter")
             Text("↩ Paste")
             Text("⌘1–9 Quick paste")
             Text("⌘P Pin")
@@ -78,7 +73,7 @@ private struct HistoryList: View {
     var body: some View {
         let sections = model.sections
         if sections.isEmpty {
-            EmptyHistory(isSearching: !model.query.isEmpty || model.filter != .all)
+            EmptyHistory(isSearching: !model.query.isEmpty || model.filter != .all || model.pinnedOnly)
         } else {
             ScrollViewReader { proxy in
                 ScrollView {
@@ -357,5 +352,69 @@ private struct PreviewPane: View {
             .buttonStyle(.bordered)
         }
         .controlSize(.large)
+    }
+}
+
+/// Type filters as one rounded track with a soft pill behind the selected item, matching the
+/// mockup; the system segmented control draws separators and a blue selection instead.
+@MainActor
+private struct FilterBar: View {
+    @Binding var selection: HistoryFilter
+    @Namespace private var pill
+
+    var body: some View {
+        HStack(spacing: 2) {
+            ForEach(HistoryFilter.allCases) { filter in
+                let isSelected = filter == selection
+                Button {
+                    withAnimation(.snappy(duration: 0.2)) { selection = filter }
+                } label: {
+                    Text(filter.label)
+                        .font(.system(size: 13, weight: isSelected ? .semibold : .regular))
+                        .foregroundStyle(isSelected ? Color.primary : Color.secondary)
+                        .padding(.horizontal, 11)
+                        .padding(.vertical, 4)
+                        .background {
+                            if isSelected {
+                                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                    .fill(Color.primary.opacity(0.16))
+                                    .matchedGeometryEffect(id: "pill", in: pill)
+                            }
+                        }
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(isSelected ? .isSelected : [])
+            }
+        }
+        .padding(3)
+        .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(Color.primary.opacity(0.06)))
+        .fixedSize()
+    }
+}
+
+/// Shows only pinned items. Separate from the type filters so it combines with them.
+@MainActor
+private struct PinnedToggle: View {
+    @Binding var isOn: Bool
+
+    var body: some View {
+        Button {
+            isOn.toggle()
+        } label: {
+            Image(systemName: isOn ? "pin.fill" : "pin")
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(isOn ? Color.accentColor : Color.secondary)
+                .frame(width: 30, height: 30)
+                .background(
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .fill(Color.primary.opacity(isOn ? 0.16 : 0.06))
+                )
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .help(isOn ? "Showing pinned items only" : "Show pinned items only")
+        .accessibilityLabel("Pinned only")
+        .accessibilityAddTraits(isOn ? .isSelected : [])
     }
 }

@@ -64,7 +64,10 @@ final class HistoryStoreTests: XCTestCase {
         XCTAssertEqual(store.filtered(query: "WORLD").map(\.text), ["hello world"])
         XCTAssertEqual(store.filtered(query: "safari").map(\.text), ["https://example.com"])
         XCTAssertEqual(store.filtered(query: "hello notes").count, 1)
-        XCTAssertEqual(store.filtered(.pinned).count, 0)
+        XCTAssertEqual(store.filtered(pinnedOnly: true).count, 0)
+        store.togglePin(id: store.items.first { $0.kind == .link }!.id)
+        XCTAssertEqual(store.filtered(.links, pinnedOnly: true).map(\.text), ["https://example.com"])
+        XCTAssertEqual(store.filtered(.text, pinnedOnly: true).count, 0)
     }
 
     func testClearKeepsPinned() {
