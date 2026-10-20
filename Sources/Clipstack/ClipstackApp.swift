@@ -33,7 +33,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             // Lets CloudKit tell this Mac when another one changed the history.
             NSApp.registerForRemoteNotifications()
         }
-        if !UserDefaults.standard.bool(forKey: PrefKey.hasCompletedOnboarding) {
+        // Also shown when paste access is missing: a rename or new signature means macOS asks again.
+        let needsAccess = Preferences.pasteDirectly && !PasteService.hasAccessibilityAccess
+        if !UserDefaults.standard.bool(forKey: PrefKey.hasCompletedOnboarding) || needsAccess {
             showOnboarding()
         }
     }
