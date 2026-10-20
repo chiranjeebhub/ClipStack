@@ -15,11 +15,12 @@ final class PasteService {
 
     private static var didPromptForAccess = false
 
-    nonisolated static var hasAccessibilityAccess: Bool { AXIsProcessTrusted() }
+    // The post-event access check, unlike AXIsProcessTrusted, works inside the App Sandbox.
+    // macOS lists it under Privacy & Security › Accessibility.
+    nonisolated static var hasAccessibilityAccess: Bool { CGPreflightPostEventAccess() }
 
     nonisolated static func requestAccessibilityAccess() {
-        let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary
-        _ = AXIsProcessTrustedWithOptions(options)
+        _ = CGRequestPostEventAccess()
     }
 
     nonisolated static func openAccessibilitySettings() {

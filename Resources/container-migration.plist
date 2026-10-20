@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<!-- On the first sandboxed launch, macOS moves history and settings from earlier, unsandboxed builds into the app's container. -->
+<dict>
+    <key>Move</key>
+    <array>
+        <string>${ApplicationSupport}/Clipstack</string>
+        <string>${Library}/Preferences/com.chiranjeebhub.clipstack.plist</string>
+    </array>
+</dict>
+</plist>
