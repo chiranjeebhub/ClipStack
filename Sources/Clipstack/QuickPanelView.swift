@@ -36,7 +36,7 @@ struct QuickPanelView: View {
                 .textFieldStyle(.plain)
                 .font(.system(size: 20))
                 .focused($searchFocused)
-            FilterBar(selection: $model.filter)
+            FilterBar(selection: $model.filter, pinnedOnly: model.pinnedOnly)
             PinnedToggle(isOn: $model.pinnedOnly)
         }
         .padding(.horizontal, 16)
@@ -50,6 +50,7 @@ struct QuickPanelView: View {
             Text("↩ Paste")
             Text("⌘1–9 Quick paste")
             Text("⌘P Pin")
+            Text("⇧⌘P Pinned")
             Text("⌘⌫ Delete")
             Spacer()
             Text(countLabel)
@@ -360,12 +361,14 @@ private struct PreviewPane: View {
 @MainActor
 private struct FilterBar: View {
     @Binding var selection: HistoryFilter
+    /// With pinned-only on and no type chosen, the pin button is the selected stop, not All.
+    let pinnedOnly: Bool
     @Namespace private var pill
 
     var body: some View {
         HStack(spacing: 2) {
             ForEach(HistoryFilter.allCases) { filter in
-                let isSelected = filter == selection
+                let isSelected = filter == selection && !(pinnedOnly && filter == .all)
                 Button {
                     withAnimation(.snappy(duration: 0.2)) { selection = filter }
                 } label: {
@@ -413,7 +416,7 @@ private struct PinnedToggle: View {
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .help(isOn ? "Showing pinned items only" : "Show pinned items only")
+        .help(isOn ? "Showing pinned items only (⇧⌘P)" : "Show pinned items only (⇧⌘P)")
         .accessibilityLabel("Pinned only")
         .accessibilityAddTraits(isOn ? .isSelected : [])
     }

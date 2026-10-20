@@ -83,10 +83,14 @@ final class QuickPanelModel {
         selectedID = remaining.isEmpty ? nil : remaining[min(index, remaining.count - 1)].id
     }
 
+    /// Steps through the filter bar with ←/→ or Tab: All, Text, Links, Images, Files, then the pin
+    /// button (pinned items of every type), wrapping at both ends. Landing on a type turns pinned-only off.
     func cycleFilter(forward: Bool) {
-        let all = HistoryFilter.allCases
-        let index = all.firstIndex(of: filter) ?? 0
-        filter = all[(index + (forward ? 1 : all.count - 1)) % all.count]
+        let stops: [HistoryFilter?] = HistoryFilter.allCases + [nil]
+        let current = pinnedOnly && filter == .all ? stops.count - 1 : (stops.firstIndex(of: filter) ?? 0)
+        let next = stops[(current + (forward ? 1 : stops.count - 1)) % stops.count]
+        pinnedOnly = next == nil
+        filter = next ?? .all
     }
 
     /// Returns true when the key was handled and should not reach the search field.
@@ -135,6 +139,9 @@ final class QuickPanelModel {
             return true
         }
         switch characters {
+        case "p" where flags.contains(.shift):
+            pinnedOnly.toggle()
+            return true
         case "p":
             togglePin()
             return true
