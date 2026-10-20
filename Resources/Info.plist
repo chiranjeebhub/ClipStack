@@ -5,17 +5,17 @@
     <key>CFBundleDevelopmentRegion</key>
     <string>en</string>
     <key>CFBundleDisplayName</key>
-    <string>Clipboard</string>
+    <string>Clipstack</string>
     <key>CFBundleExecutable</key>
-    <string>Clipboard</string>
+    <string>Clipstack</string>
     <key>CFBundleIconFile</key>
     <string>AppIcon</string>
     <key>CFBundleIdentifier</key>
-    <string>com.chiranjeebhub.clipboard</string>
+    <string>com.chiranjeebhub.clipstack</string>
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
     <key>CFBundleName</key>
-    <string>Clipboard</string>
+    <string>Clipstack</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>

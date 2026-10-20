@@ -1,6 +1,6 @@
 # XcodeGen spec for the signed build with iCloud sync. Generate the project with `xcodegen generate`,
 # or just run scripts/build-signed.sh. The plain SwiftPM build (scripts/build-app.sh) doesn't use this.
-name: Clipboard
+name: Clipstack
 options:
   deploymentTarget:
     macOS: "14.0"
@@ -8,7 +8,7 @@ options:
   # Keeps the generated project readable by Xcode 15 as well as newer versions.
   projectFormat: xcode15_0
 packages:
-  ClipboardPackage:
+  ClipstackPackage:
     path: .
 settings:
   base:
@@ -17,30 +17,30 @@ settings:
     MARKETING_VERSION: "1.1"
     CURRENT_PROJECT_VERSION: "2"
 targets:
-  ClipboardApp:
+  ClipstackApp:
     type: application
     platform: macOS
     sources:
-      - path: Sources/Clipboard
+      - path: Sources/Clipstack
       - path: build/AppIcon.icns
         buildPhase: resources
         optional: true
     dependencies:
-      - package: ClipboardPackage
+      - package: ClipstackPackage
         product: ClipboardCore
       - sdk: Carbon.framework
       - sdk: CloudKit.framework
     settings:
       base:
-        PRODUCT_NAME: Clipboard
-        PRODUCT_BUNDLE_IDENTIFIER: com.chiranjeebhub.clipboard
+        PRODUCT_NAME: Clipstack
+        PRODUCT_BUNDLE_IDENTIFIER: com.chiranjeebhub.clipstack
         INFOPLIST_FILE: Resources/Info.plist
-        CODE_SIGN_ENTITLEMENTS: Resources/Clipboard.entitlements
+        CODE_SIGN_ENTITLEMENTS: Resources/Clipstack.entitlements
         ENABLE_HARDENED_RUNTIME: YES
         SWIFT_VERSION: "5.0"
         GENERATE_INFOPLIST_FILE: NO
 schemes:
-  Clipboard:
+  Clipstack:
     build:
       targets:
-        ClipboardApp: all
+        ClipstackApp: all

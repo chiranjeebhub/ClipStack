@@ -1,4 +1,4 @@
-# Clipboard
+# Clipstack
 
 A native macOS clipboard manager, built with SwiftUI and AppKit. It keeps everything you copy and lets you search it and paste it back from the keyboard.
 
@@ -9,7 +9,7 @@ A native macOS clipboard manager, built with SwiftUI and AppKit. It keeps everyt
 - **Rich previews.** Text, code (monospaced), links, images, files and colors each get their own preview. You can edit text items in place with ⌘E.
 - **Pinning.** ⌘P pins an item. Pinned items are never removed by the history limits, and they appear at the top of the menu bar menu with ⌥1–9 shortcuts.
 - **Menu bar menu.** Pinned and recent items, Pause Recording, Clear History and Settings.
-- **Privacy.** Items that password managers mark as concealed or transient are skipped, and you can list apps whose copies are never saved. History stays on your Mac in `~/Library/Application Support/Clipboard`.
+- **Privacy.** Items that password managers mark as concealed or transient are skipped, and you can list apps whose copies are never saved. History stays on your Mac in `~/Library/Application Support/Clipstack`.
 - **iCloud sync.** History and pinned items sync through your private iCloud (CloudKit) database, so they come back after a reinstall and show up on your other Macs. It can be turned off in Settings › Storage.
 - **Settings.** Launch at login, a custom global shortcut, paste behaviour, panel position, how long history is kept and the maximum number of items.
 
@@ -31,10 +31,10 @@ Without a developer account, `scripts/build-app.sh` builds an ad-hoc-signed app 
 
 ```sh
 scripts/build-app.sh
-open build/Clipboard.app
+open build/Clipstack.app
 ```
 
-To try changes quickly without bundling, run `swift run Clipboard`. Launch at login, iCloud sync and the app icon only work in a bundled app.
+To try changes quickly without bundling, run `swift run Clipstack`. Launch at login, iCloud sync and the app icon only work in a bundled app.
 
 Run the tests with `swift test`.
 
@@ -45,7 +45,7 @@ On first launch, the app asks for Accessibility access. macOS requires this befo
 | Path | What's there |
 | --- | --- |
 | `Sources/ClipboardCore` | History model, storage, search and filters, content detection, and the drawn app icon. Covered by tests. |
-| `Sources/Clipboard` | The app: pasteboard monitor, global shortcut, paste service, quick panel, menu bar menu, Settings and onboarding. |
+| `Sources/Clipstack` | The app: pasteboard monitor, global shortcut, paste service, quick panel, menu bar menu, Settings and onboarding. |
 | `Sources/MakeIcon` | Renders the app icon to an `.iconset` during the build. |
 | `scripts/build-signed.sh` | Builds the signed app (with iCloud) through the Xcode project generated from `project.yml`. |
-| `scripts/build-app.sh` | Builds an ad-hoc-signed `Clipboard.app` with SwiftPM only, without iCloud. |
+| `scripts/build-app.sh` | Builds an ad-hoc-signed `Clipstack.app` with SwiftPM only, without iCloud. |

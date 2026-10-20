@@ -31,7 +31,7 @@ struct MenuBarContent: View {
 
         Divider()
 
-        Button("Open Clipboard…") { environment.panel.show() }
+        Button("Open Clipstack…") { environment.panel.show() }
             .keyboardShortcut(Preferences.hotKey.keyEquivalent, modifiers: Preferences.hotKey.eventModifiers)
         Button(environment.isPaused ? "Resume Recording" : "Pause Recording") {
             environment.isPaused.toggle()
@@ -43,7 +43,7 @@ struct MenuBarContent: View {
 
         Button("Settings…") { environment.showSettings() }
             .keyboardShortcut(",", modifiers: .command)
-        Button("Quit Clipboard") { NSApp.terminate(nil) }
+        Button("Quit Clipstack") { NSApp.terminate(nil) }
             .keyboardShortcut("q", modifiers: .command)
     }
 

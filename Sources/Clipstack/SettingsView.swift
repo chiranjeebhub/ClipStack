@@ -394,7 +394,7 @@ private struct AboutPane: View {
     var body: some View {
         VStack(spacing: 10) {
             Image(nsImage: StackIcon.appIcon(size: 128))
-            Text("Clipboard").font(.title.bold())
+            Text("Clipstack").font(.title.bold())
             Text(version).foregroundStyle(.secondary)
             Text("Everything you copy, kept and searchable.")
                 .padding(.top, 4)

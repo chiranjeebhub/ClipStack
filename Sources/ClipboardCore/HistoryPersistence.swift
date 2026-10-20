@@ -10,10 +10,29 @@ public final class HistoryPersistence: @unchecked Sendable {
         try? FileManager.default.createDirectory(at: imagesDirectory, withIntermediateDirectories: true)
     }
 
-    /// `~/Library/Application Support/Clipboard`
+    /// `~/Library/Application Support/Clipstack`
     public static func defaultDirectory() -> URL {
         let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-        return base.appendingPathComponent("Clipboard", isDirectory: true)
+        return base.appendingPathComponent("Clipstack", isDirectory: true)
+    }
+
+    /// Moves history saved while the app was called "Clipboard" to the current folder, once.
+    /// Sync bookkeeping from then is dropped: it belonged to the old iCloud container.
+    public static func migrateLegacyDirectory() {
+        let fm = FileManager.default
+        let base = fm.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+        let legacy = base.appendingPathComponent("Clipboard", isDirectory: true)
+        let current = defaultDirectory()
+        guard fm.fileExists(atPath: legacy.appendingPathComponent("history.json").path),
+              !fm.fileExists(atPath: current.path) else { return }
+        do {
+            try fm.moveItem(at: legacy, to: current)
+        } catch {
+            return
+        }
+        for file in ["cloudkit-state.json", "cloudkit-records.plist"] {
+            try? fm.removeItem(at: current.appendingPathComponent(file))
+        }
     }
 
     var historyURL: URL { directory.appendingPathComponent("history.json") }

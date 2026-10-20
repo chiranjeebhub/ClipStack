@@ -49,7 +49,7 @@ struct OnboardingView: View {
         VStack(spacing: 14) {
             Image(nsImage: StackIcon.appIcon(size: 112))
                 .padding(.top, 24)
-            Text("Welcome to Clipboard")
+            Text("Welcome to Clipstack")
                 .font(.system(size: 22, weight: .bold))
             Text("Everything you copy, kept and searchable. Press \(Preferences.hotKey.displayString.replacingOccurrences(of: " ", with: "")) anywhere to bring it back.")
                 .font(.system(size: 13))
@@ -61,7 +61,7 @@ struct OnboardingView: View {
                 StepRow(number: 1, done: true, title: "Record clipboard history", subtitle: "Stored only on this Mac") {
                     EmptyView()
                 }
-                StepRow(number: 2, done: trusted, title: "Allow Accessibility access", subtitle: "Lets Clipboard paste straight into the app you’re using") {
+                StepRow(number: 2, done: trusted, title: "Allow Accessibility access", subtitle: "Lets Clipstack paste straight into the app you’re using") {
                     if !trusted {
                         Button("Open Settings") {
                             PasteService.requestAccessibilityAccess()
