@@ -2,11 +2,6 @@
   <img src="docs/images/social-preview.png" alt="Clipstack: clipboard history for your Mac" width="100%">
 </p>
 
-<h1 align="center">
-  <img src="docs/images/icon.png" alt="" width="96" height="96"><br>
-  Clipstack
-</h1>
-
 <p align="center">
   <strong>Clipboard history for your Mac.</strong><br>
   Everything you copy, searchable and ready to paste again without leaving the keyboard.
