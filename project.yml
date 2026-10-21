@@ -22,7 +22,7 @@ settings:
   base:
     DEVELOPMENT_TEAM: 4TK5PNR392
     CODE_SIGN_STYLE: Automatic
-    MARKETING_VERSION: "1.1"
+    MARKETING_VERSION: "1.2"
     CURRENT_PROJECT_VERSION: "3"
 targets:
   ClipstackApp:
