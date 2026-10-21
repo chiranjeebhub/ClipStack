@@ -17,11 +17,13 @@
   <img src="https://img.shields.io/badge/macOS-14%2B-0A5FD6?logo=apple&logoColor=white" alt="macOS 14 or later">
   <img src="https://img.shields.io/badge/Swift-SwiftUI%20%2B%20AppKit-F05138?logo=swift&logoColor=white" alt="Swift, SwiftUI and AppKit">
   <a href="https://github.com/chiranjeebhub/ClipStack/releases"><img src="https://img.shields.io/github/downloads/chiranjeebhub/ClipStack/total?color=0A5FD6" alt="Downloads"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/chiranjeebhub/ClipStack?color=0A5FD6" alt="MIT License"></a>
 </p>
 
 <p align="center">
   <a href="#install">Install</a> ·
   <a href="#features">Features</a> ·
+  <a href="#screenshots">Screenshots</a> ·
   <a href="#privacy">Privacy</a> ·
   <a href="https://chiranjeebhub.github.io/clipstack-site/support">Support</a> ·
   <a href="#building-from-source">Build from source</a>
@@ -64,6 +66,16 @@ On first launch, Clipstack asks for Accessibility access. macOS requires this be
 | ⌘P | Pin or unpin the selected item |
 | ⌘E | Edit a text item |
 | ⌥1–9 | Paste a pinned item from the menu bar menu |
+
+## Screenshots
+
+| Quick panel | Images |
+| --- | --- |
+| ![Quick panel with search, filters and a text preview](docs/images/screenshots/1-panel.jpg) | ![Image items with previews](docs/images/screenshots/2-images.jpg) |
+| **Pinned items** | **Menu bar menu** |
+| ![Pinned items at the top of the history](docs/images/screenshots/3-pinned.jpg) | ![Menu bar menu with pinned and recent items](docs/images/screenshots/4-menu.jpg) |
+
+<p align="center"><img src="docs/images/screenshots/6-storage.jpg" alt="Storage settings with iCloud sync" width="70%"></p>
 
 ## Privacy
 
@@ -154,3 +166,7 @@ brew install --cask chiranjeebhub/tap/clipstack
 | `scripts/release-direct.sh` | Builds, notarizes and (with `--publish`) releases the direct download DMG. |
 | `packaging/clipstack.rb` | Template for the Homebrew cask. |
 | `scripts/build-app.sh` | Builds an ad-hoc-signed `Clipstack.app` with SwiftPM only, without iCloud. |
+
+## License
+
+Clipstack is released under the [MIT License](LICENSE). Copyright © 2026 Chiranjeeb Jena.
