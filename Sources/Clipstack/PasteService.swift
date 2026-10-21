@@ -19,6 +19,10 @@ final class PasteService {
     // macOS lists it under Privacy & Security › Accessibility.
     nonisolated static var hasAccessibilityAccess: Bool { CGPreflightPostEventAccess() }
 
+    /// macOS ties the permission to the app's signature, so after an update or reinstall the old
+    /// entry can still show as switched on without applying to this copy.
+    static let staleAccessHint = "Already on? Select Clipstack in the list, click −, then add it again or relaunch Clipstack."
+
     nonisolated static func requestAccessibilityAccess() {
         _ = CGRequestPostEventAccess()
     }

@@ -69,7 +69,7 @@ struct OnboardingView: View {
                 StepRow(number: 1, done: true, title: "Record clipboard history", subtitle: "Stored on this Mac") {
                     EmptyView()
                 }
-                StepRow(number: 2, done: trusted, title: "Allow Accessibility access", subtitle: "Lets Clipstack paste straight into the app you’re using") {
+                StepRow(number: 2, done: trusted, title: "Allow Accessibility access", subtitle: trusted ? "Lets Clipstack paste straight into the app you’re using" : "Lets Clipstack paste straight into the app you’re using. \(PasteService.staleAccessHint)") {
                     if !trusted {
                         Button("Open Settings") {
                             PasteService.requestAccessibilityAccess()

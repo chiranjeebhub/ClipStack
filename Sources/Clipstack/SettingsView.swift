@@ -225,7 +225,7 @@ private struct PrivacyPane: View {
                     }
                 } label: {
                     Text("Accessibility access")
-                    Text("Needed to paste directly into other apps")
+                    Text(trusted ? "Needed to paste directly into other apps" : "Needed to paste directly into other apps. \(PasteService.staleAccessHint)")
                 }
             } footer: {
                 Text("Your clipboard history is stored only on this Mac and never leaves it.")

@@ -48,6 +48,9 @@ if [[ "${1:-}" == "--install" ]]; then
     # Remove the build from before the app was renamed from "Clipboard".
     osascript -e 'quit app id "com.chiranjeebhub.clipboard"' >/dev/null 2>&1 || true
     rm -rf /Applications/Clipboard.app
+    # The new signature doesn't match the old Accessibility entry, which would otherwise stay listed
+    # as on while not applying. Clearing it lets the app ask again cleanly.
+    tccutil reset Accessibility com.chiranjeebhub.clipstack >/dev/null 2>&1 || true
     cp -R "$BUILD_DIR/Clipstack.app" /Applications/
     open /Applications/Clipstack.app
     echo "✓ Installed /Applications/Clipstack.app"
