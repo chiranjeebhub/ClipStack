@@ -6,6 +6,7 @@ enum PrefKey {
     static let showMenuBarIcon = "showMenuBarIcon"
     static let pasteDirectly = "pasteDirectly"
     static let alwaysPlainText = "alwaysPlainText"
+    static let moveToTopOnPaste = "moveToTopOnPaste"
     static let panelPosition = "panelPosition"
     static let retentionDays = "retentionDays"
     static let maxItems = "maxItems"
@@ -59,6 +60,7 @@ enum Preferences {
             PrefKey.showMenuBarIcon: true,
             PrefKey.pasteDirectly: true,
             PrefKey.alwaysPlainText: false,
+            PrefKey.moveToTopOnPaste: false,
             PrefKey.panelPosition: PanelPosition.center.rawValue,
             PrefKey.retentionDays: Retention.month.rawValue,
             PrefKey.maxItems: 1000,
@@ -77,6 +79,7 @@ enum Preferences {
 
     static var pasteDirectly: Bool { defaults.bool(forKey: PrefKey.pasteDirectly) }
     static var alwaysPlainText: Bool { defaults.bool(forKey: PrefKey.alwaysPlainText) }
+    static var moveToTopOnPaste: Bool { defaults.bool(forKey: PrefKey.moveToTopOnPaste) }
     static var ignoreConcealed: Bool { defaults.bool(forKey: PrefKey.ignoreConcealed) }
     static var ignoreTransient: Bool { defaults.bool(forKey: PrefKey.ignoreTransient) }
     static var panelPosition: PanelPosition {

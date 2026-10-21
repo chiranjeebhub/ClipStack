@@ -91,6 +91,7 @@ private struct GeneralPane: View {
     @AppStorage(PrefKey.showMenuBarIcon) private var showMenuBarIcon = true
     @AppStorage(PrefKey.pasteDirectly) private var pasteDirectly = true
     @AppStorage(PrefKey.alwaysPlainText) private var alwaysPlainText = false
+    @AppStorage(PrefKey.moveToTopOnPaste) private var moveToTopOnPaste = false
     @AppStorage(PrefKey.panelPosition) private var panelPosition = PanelPosition.center.rawValue
     @AppStorage(PrefKey.retentionDays) private var retentionDays = Retention.month.rawValue
     @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
@@ -120,6 +121,10 @@ private struct GeneralPane: View {
                     Text("Otherwise the item is only copied to the clipboard")
                 }
                 Toggle("Always paste as plain text", isOn: $alwaysPlainText)
+                Toggle(isOn: $moveToTopOnPaste) {
+                    Text("Move pasted items to the top")
+                    Text("Otherwise history stays in the order you copied things")
+                }
                 Picker("Panel position", selection: $panelPosition) {
                     ForEach(PanelPosition.allCases) { Text($0.label).tag($0.rawValue) }
                 }

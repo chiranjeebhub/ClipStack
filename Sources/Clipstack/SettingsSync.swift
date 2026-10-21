@@ -9,7 +9,7 @@ final class SettingsSync {
     static let syncedKeys = [
         PrefKey.showMenuBarIcon, PrefKey.pasteDirectly, PrefKey.alwaysPlainText, PrefKey.panelPosition,
         PrefKey.retentionDays, PrefKey.maxItems, PrefKey.ignoreConcealed, PrefKey.ignoreTransient,
-        PrefKey.ignoredApps, PrefKey.hotKeyCode, PrefKey.hotKeyModifiers,
+        PrefKey.ignoredApps, PrefKey.hotKeyCode, PrefKey.hotKeyModifiers, PrefKey.moveToTopOnPaste,
     ]
 
     /// True when this build carries the key-value store entitlement; ad-hoc builds don't.

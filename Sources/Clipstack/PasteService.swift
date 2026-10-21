@@ -59,8 +59,10 @@ final class PasteService {
             }
             pasteboard.setString(text, forType: .string)
         }
+        // The monitor ignores this change, so the history keeps its order unless the user asked
+        // for pasted items to move to the top.
         monitor.skipCurrentContents()
-        store.touch(id: item.id)
+        if Preferences.moveToTopOnPaste { store.touch(id: item.id) }
         ReviewPrompt.recordUse()
     }
 
