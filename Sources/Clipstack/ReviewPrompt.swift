@@ -7,6 +7,8 @@ import StoreKit
 /// as closing the panel without pasting or closing Settings, never mid-paste or at launch.
 @MainActor
 enum ReviewPrompt {
+    /// Only App Store copies can be rated, so the direct download build never asks.
+    static let isAvailable = !AppUpdates.isAvailable
     static let appStoreID = "6824931139"
     static let writeReviewURL = URL(string: "macappstore://apps.apple.com/app/id\(appStoreID)?action=write-review")!
 
@@ -28,7 +30,7 @@ enum ReviewPrompt {
     }
 
     static func requestIfAppropriate() {
-        guard !DemoData.isEnabled, let firstLaunch = defaults.object(forKey: PrefKey.firstLaunchDate) as? Date else { return }
+        guard isAvailable, !DemoData.isEnabled, let firstLaunch = defaults.object(forKey: PrefKey.firstLaunchDate) as? Date else { return }
         let eligible = ReviewPolicy().shouldRequest(
             firstLaunch: firstLaunch,
             uses: defaults.integer(forKey: PrefKey.reviewUseCount),

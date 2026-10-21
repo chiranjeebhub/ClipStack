@@ -49,6 +49,29 @@ scripts/archive-appstore.sh --upload   # uploads the build to App Store Connect
 
 Uploading needs an app record for `com.chiranjeebhub.clipstack` in App Store Connect. Before the first App Store release, deploy the CloudKit schema to production in the CloudKit Console, because App Store builds use the production environment.
 
+### Direct download
+
+The same app is also distributed outside the App Store, as a DMG signed with Developer ID and notarized by Apple, so it opens without Gatekeeper warnings. This build (the `ClipstackDirect` target) adds [Sparkle](https://sparkle-project.org) so it updates itself, and shows Check for Updates… where the App Store build shows Rate Clipstack…. It stays sandboxed and uses the same bundle ID, so it shares history and settings with the App Store version; install only one of them.
+
+Set up the Mac that makes releases once. The script says what it still needs from you: a Developer ID Application certificate, an app-specific password for notarization, and a signed-in GitHub CLI. It also creates the Sparkle signing key and writes the public key into `Resources/Info-Direct.plist`; commit that change and back up the private key.
+
+```sh
+scripts/setup-direct.sh
+```
+
+Then, for each release (raise `MARKETING_VERSION` in `project.yml` first):
+
+```sh
+scripts/release-direct.sh             # builds and notarizes build/Direct/Clipstack-<version>.dmg
+scripts/release-direct.sh --publish   # also publishes it
+```
+
+Publishing puts the DMG on a GitHub release in the public [clipstack-site](https://github.com/chiranjeebhub/clipstack-site) repo, adds it to the update feed at https://chiranjeebhub.github.io/clipstack-site/appcast.xml, and updates the Homebrew cask in [chiranjeebhub/homebrew-clipstack](https://github.com/chiranjeebhub/homebrew-clipstack), so people can install it with:
+
+```sh
+brew install --cask chiranjeebhub/clipstack/clipstack
+```
+
 On first launch, the app asks for Accessibility access. macOS requires this before an app can type ⌘V into other apps. Without it, choosing an item copies it to the clipboard and you paste it yourself.
 
 ## Project layout
@@ -60,4 +83,7 @@ On first launch, the app asks for Accessibility access. macOS requires this befo
 | `Sources/MakeIcon` | Renders the app icon to an `.iconset` during the build. |
 | `scripts/build-signed.sh` | Builds the signed app (with iCloud) through the Xcode project generated from `project.yml`. |
 | `scripts/archive-appstore.sh` | Archives the signed app and exports or uploads it for the Mac App Store. |
+| `scripts/setup-direct.sh` | One-time setup for direct download releases: certificate check, Sparkle key, notarization login. |
+| `scripts/release-direct.sh` | Builds, notarizes and (with `--publish`) releases the direct download DMG. |
+| `packaging/clipstack.rb` | Template for the Homebrew cask. |
 | `scripts/build-app.sh` | Builds an ad-hoc-signed `Clipstack.app` with SwiftPM only, without iCloud. |

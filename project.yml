@@ -1,5 +1,10 @@
-# XcodeGen spec for the signed build with iCloud sync. Generate the project with `xcodegen generate`,
+# XcodeGen spec for the signed builds with iCloud sync. Generate the project with `xcodegen generate`,
 # or just run scripts/build-signed.sh. The plain SwiftPM build (scripts/build-app.sh) doesn't use this.
+#
+# Two app targets share the same sources and bundle ID:
+#   ClipstackApp     the Mac App Store build (scripts/archive-appstore.sh)
+#   ClipstackDirect  the direct download build, signed with Developer ID and updated by Sparkle
+#                    (scripts/release-direct.sh). Its code is compiled with DIRECT_DISTRIBUTION.
 name: Clipstack
 options:
   deploymentTarget:
@@ -10,6 +15,9 @@ options:
 packages:
   ClipstackPackage:
     path: .
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    from: "2.6.0"
 settings:
   base:
     DEVELOPMENT_TEAM: 4TK5PNR392
@@ -43,8 +51,40 @@ targets:
         ENABLE_HARDENED_RUNTIME: YES
         SWIFT_VERSION: "5.0"
         GENERATE_INFOPLIST_FILE: NO
+  ClipstackDirect:
+    type: application
+    platform: macOS
+    sources:
+      - path: Sources/Clipstack
+      - path: build/AppIcon.icns
+        buildPhase: resources
+        optional: true
+      - path: Resources/PrivacyInfo.xcprivacy
+        buildPhase: resources
+      - path: Resources/container-migration.plist
+        buildPhase: resources
+    dependencies:
+      - package: ClipstackPackage
+        product: ClipboardCore
+      - package: Sparkle
+      - sdk: Carbon.framework
+      - sdk: CloudKit.framework
+    settings:
+      base:
+        PRODUCT_NAME: Clipstack
+        PRODUCT_BUNDLE_IDENTIFIER: com.chiranjeebhub.clipstack
+        INFOPLIST_FILE: Resources/Info-Direct.plist
+        CODE_SIGN_ENTITLEMENTS: Resources/Clipstack-Direct.entitlements
+        SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited) DIRECT_DISTRIBUTION"
+        ENABLE_HARDENED_RUNTIME: YES
+        SWIFT_VERSION: "5.0"
+        GENERATE_INFOPLIST_FILE: NO
 schemes:
   Clipstack:
     build:
       targets:
         ClipstackApp: all
+  ClipstackDirect:
+    build:
+      targets:
+        ClipstackDirect: all

@@ -28,3 +28,7 @@ jobs:
           xcodegen generate
           xcodebuild -project Clipstack.xcodeproj -scheme Clipstack -configuration Release \
             -derivedDataPath build/DerivedData CODE_SIGNING_ALLOWED=NO build
+      - name: Check the direct download build (with Sparkle) compiles
+        run: |
+          xcodebuild -project Clipstack.xcodeproj -scheme ClipstackDirect -configuration Release \
+            -derivedDataPath build/DerivedData CODE_SIGNING_ALLOWED=NO build
