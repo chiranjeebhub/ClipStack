@@ -4,14 +4,13 @@ cask "clipstack" do
   version "@VERSION@"
   sha256 "@SHA256@"
 
-  url "https://github.com/chiranjeebhub/clipstack-site/releases/download/v#{version}/Clipstack-#{version}.dmg",
-      verified: "github.com/chiranjeebhub/clipstack-site/"
+  url "https://github.com/chiranjeebhub/ClipStack/releases/download/v#{version}/Clipstack-#{version}.dmg"
   name "Clipstack"
   desc "Clipboard history you can search and paste from the keyboard"
-  homepage "https://chiranjeebhub.github.io/clipstack-site/support"
+  homepage "https://github.com/chiranjeebhub/ClipStack"
 
   livecheck do
-    url "https://chiranjeebhub.github.io/clipstack-site/appcast.xml"
+    url "https://github.com/chiranjeebhub/ClipStack/releases/latest/download/appcast.xml"
     strategy :sparkle, &:short_version
   end
 

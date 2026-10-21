@@ -66,7 +66,7 @@ scripts/release-direct.sh             # builds and notarizes build/Direct/Clipst
 scripts/release-direct.sh --publish   # also publishes it
 ```
 
-Publishing puts the DMG on a GitHub release in the public [clipstack-site](https://github.com/chiranjeebhub/clipstack-site) repo, adds it to the update feed at https://chiranjeebhub.github.io/clipstack-site/appcast.xml, and updates the Homebrew cask in [chiranjeebhub/homebrew-clipstack](https://github.com/chiranjeebhub/homebrew-clipstack), so people can install it with:
+Publishing creates a GitHub release in this repo with the DMG and the Sparkle update feed (`appcast.xml`, which installed copies read from https://github.com/chiranjeebhub/ClipStack/releases/latest/download/appcast.xml), and updates the Homebrew cask in [chiranjeebhub/homebrew-clipstack](https://github.com/chiranjeebhub/homebrew-clipstack), so people can install it with:
 
 ```sh
 brew install --cask chiranjeebhub/clipstack/clipstack

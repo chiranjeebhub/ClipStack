@@ -1,7 +1,7 @@
 #!/bin/bash
 # Builds the direct download version of Clipstack: signed with Developer ID, notarized by Apple and
-# packaged as a DMG. With --publish it also releases it: a GitHub release with the DMG, a new entry in
-# the Sparkle appcast (so installed copies update themselves) and an updated Homebrew cask.
+# packaged as a DMG. With --publish it also releases it: a GitHub release with the DMG and the Sparkle
+# appcast (so installed copies update themselves), and an updated Homebrew cask.
 # Run scripts/setup-direct.sh once first.
 #
 #   scripts/release-direct.sh             # build/Direct/Clipstack-<version>.dmg, notarized
@@ -19,14 +19,13 @@ BUILD_NUMBER="${BUILD_NUMBER:-$(date +%Y%m%d%H%M)}"
 VERSION=$(sed -n 's/.*MARKETING_VERSION: "\(.*\)"/\1/p' project.yml)
 TEAM_ID=$(sed -n 's/.*DEVELOPMENT_TEAM: \(.*\)/\1/p' project.yml)
 NOTARY_PROFILE="${NOTARY_PROFILE:-clipstack-notary}"
-# Releases and the appcast live in the public site repo, because the source repo is private and
-# its release downloads aren't public.
-SITE_REPO=chiranjeebhub/clipstack-site
-SITE_URL=https://chiranjeebhub.github.io/clipstack-site
+# Every release carries appcast.xml, so the feed URL in Info-Direct.plist
+# (releases/latest/download/appcast.xml) always serves the newest one.
+REPO=chiranjeebhub/ClipStack
 TAP_REPO=chiranjeebhub/homebrew-clipstack
 TAG="v$VERSION"
 DMG="$OUT_DIR/Clipstack-$VERSION.dmg"
-DOWNLOAD_URL="https://github.com/$SITE_REPO/releases/download/$TAG/Clipstack-$VERSION.dmg"
+DOWNLOAD_URL="https://github.com/$REPO/releases/download/$TAG/Clipstack-$VERSION.dmg"
 
 PUBLISH=false
 [[ "${1:-}" == "--publish" ]] && PUBLISH=true
@@ -40,7 +39,7 @@ if [[ -z "$IDENTITY" ]]; then
     echo "error: no Developer ID Application certificate for team $TEAM_ID. Run scripts/setup-direct.sh."
     exit 1
 fi
-if $PUBLISH && gh release view "$TAG" -R "$SITE_REPO" >/dev/null 2>&1; then
+if $PUBLISH && gh release view "$TAG" -R "$REPO" >/dev/null 2>&1; then
     echo "error: $TAG is already released. Raise MARKETING_VERSION in project.yml first."
     exit 1
 fi
@@ -142,30 +141,21 @@ echo "✓ Built $DMG"
 
 $PUBLISH || exit 0
 
-echo "▸ Publishing GitHub release $TAG"
-gh release create "$TAG" "$DMG" -R "$SITE_REPO" \
-    --title "Clipstack $VERSION" --notes "${RELEASE_NOTES:-Clipstack $VERSION}"
-
 echo "▸ Updating the Sparkle appcast"
 GENERATE_APPCAST=$(find "$BUILD_DIR/DerivedData/SourcePackages/artifacts" -path '*/bin/generate_appcast' | head -1)
-SITE="$BUILD_DIR/clipstack-site"
-rm -rf "$SITE"
-gh repo clone "$SITE_REPO" "$SITE" -- --depth 1 --quiet
-# GitHub Pages serves the site from docs/ when the repo has one, otherwise from the root.
-SITE_ROOT="$SITE"
-[[ -d "$SITE/docs" ]] && SITE_ROOT="$SITE/docs"
 FEED_DIR="$BUILD_DIR/appcast"
 rm -rf "$FEED_DIR"
 mkdir -p "$FEED_DIR"
-[[ -f "$SITE_ROOT/appcast.xml" ]] && cp "$SITE_ROOT/appcast.xml" "$FEED_DIR/"
+# Starts from the latest release's feed, so earlier versions stay listed.
+gh release download -R "$REPO" --pattern appcast.xml --dir "$FEED_DIR" 2>/dev/null || true
 cp "$DMG" "$FEED_DIR/"
-# Signs the DMG with the key in the keychain and keeps the earlier entries in the feed.
-"$GENERATE_APPCAST" --download-url-prefix "https://github.com/$SITE_REPO/releases/download/$TAG/" \
-    --link "$SITE_URL/support" "$FEED_DIR"
-cp "$FEED_DIR/appcast.xml" "$SITE_ROOT/appcast.xml"
-git -C "$SITE" add -A
-git -C "$SITE" commit --quiet -m "Clipstack $VERSION update feed"
-git -C "$SITE" push --quiet
+# Signs the DMG with the key in the keychain.
+"$GENERATE_APPCAST" --download-url-prefix "https://github.com/$REPO/releases/download/$TAG/" \
+    --link "https://github.com/$REPO" "$FEED_DIR"
+
+echo "▸ Publishing GitHub release $TAG"
+gh release create "$TAG" "$DMG" "$FEED_DIR/appcast.xml" -R "$REPO" --target main \
+    --title "Clipstack $VERSION" --notes "${RELEASE_NOTES:-Clipstack $VERSION}"
 
 echo "▸ Updating the Homebrew cask"
 SHA=$(shasum -a 256 "$DMG" | awk '{print $1}')

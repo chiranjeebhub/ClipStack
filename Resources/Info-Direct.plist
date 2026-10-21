@@ -34,7 +34,7 @@
     <string>© 2026 Chiranjeeb Jena</string>
     <!-- Sparkle (direct download build only). Keep the rest of this file in step with Info.plist. -->
     <key>SUFeedURL</key>
-    <string>https://chiranjeebhub.github.io/clipstack-site/appcast.xml</string>
+    <string>https://github.com/chiranjeebhub/ClipStack/releases/latest/download/appcast.xml</string>
     <key>SUPublicEDKey</key>
     <string>SPARKLE_PUBLIC_KEY_NOT_SET</string>
     <key>SUEnableInstallerLauncherService</key>
