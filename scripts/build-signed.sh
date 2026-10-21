@@ -50,6 +50,8 @@ if [[ "${1:-}" == "--install" ]]; then
     rm -rf /Applications/Clipboard.app
     # The new signature doesn't match the old Accessibility entry, which would otherwise stay listed
     # as on while not applying. Clearing it lets the app ask again cleanly.
+    # The sandboxed app's permission to send ⌘V is stored as PostEvent; older builds used Accessibility.
+    tccutil reset PostEvent com.chiranjeebhub.clipstack >/dev/null 2>&1 || true
     tccutil reset Accessibility com.chiranjeebhub.clipstack >/dev/null 2>&1 || true
     cp -R "$BUILD_DIR/Clipstack.app" /Applications/
     open /Applications/Clipstack.app
