@@ -1,4 +1,4 @@
-# Template for the cask in the chiranjeebhub/homebrew-clipstack tap. scripts/release-direct.sh fills
+# Template for the cask in the chiranjeebhub/homebrew-tap tap. scripts/release-direct.sh fills
 # in the version and checksum and pushes it there.
 cask "clipstack" do
   version "@VERSION@"

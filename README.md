@@ -66,10 +66,10 @@ scripts/release-direct.sh             # builds and notarizes build/Direct/Clipst
 scripts/release-direct.sh --publish   # also publishes it
 ```
 
-Publishing creates a GitHub release in this repo with the DMG and the Sparkle update feed (`appcast.xml`, which installed copies read from https://github.com/chiranjeebhub/ClipStack/releases/latest/download/appcast.xml), and updates the Homebrew cask in [chiranjeebhub/homebrew-clipstack](https://github.com/chiranjeebhub/homebrew-clipstack), so people can install it with:
+Publishing creates a GitHub release in this repo with the DMG and the Sparkle update feed (`appcast.xml`, which installed copies read from https://github.com/chiranjeebhub/ClipStack/releases/latest/download/appcast.xml), and updates the Homebrew cask in [chiranjeebhub/homebrew-tap](https://github.com/chiranjeebhub/homebrew-tap), so people can install it with:
 
 ```sh
-brew install --cask chiranjeebhub/clipstack/clipstack
+brew install --cask chiranjeebhub/tap/clipstack
 ```
 
 On first launch, the app asks for Accessibility access. macOS requires this before an app can type ⌘V into other apps. Without it, choosing an item copies it to the clipboard and you paste it yourself.

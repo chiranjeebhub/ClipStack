@@ -22,7 +22,7 @@ NOTARY_PROFILE="${NOTARY_PROFILE:-clipstack-notary}"
 # Every release carries appcast.xml, so the feed URL in Info-Direct.plist
 # (releases/latest/download/appcast.xml) always serves the newest one.
 REPO=chiranjeebhub/ClipStack
-TAP_REPO=chiranjeebhub/homebrew-clipstack
+TAP_REPO=chiranjeebhub/homebrew-tap
 TAG="v$VERSION"
 DMG="$OUT_DIR/Clipstack-$VERSION.dmg"
 DOWNLOAD_URL="https://github.com/$REPO/releases/download/$TAG/Clipstack-$VERSION.dmg"
@@ -159,18 +159,15 @@ gh release create "$TAG" "$DMG" "$FEED_DIR/appcast.xml" -R "$REPO" --target main
 
 echo "▸ Updating the Homebrew cask"
 SHA=$(shasum -a 256 "$DMG" | awk '{print $1}')
-TAP="$BUILD_DIR/homebrew-clipstack"
+TAP="$BUILD_DIR/homebrew-tap"
 rm -rf "$TAP"
-if ! gh repo view "$TAP_REPO" >/dev/null 2>&1; then
-    gh repo create "$TAP_REPO" --public --description "Homebrew tap for Clipstack"
-fi
 gh repo clone "$TAP_REPO" "$TAP" -- --quiet
 mkdir -p "$TAP/Casks"
 sed -e "s/@VERSION@/$VERSION/" -e "s/@SHA256@/$SHA/" packaging/clipstack.rb > "$TAP/Casks/clipstack.rb"
 git -C "$TAP" add -A
 git -C "$TAP" commit --quiet -m "clipstack $VERSION"
-git -C "$TAP" push --quiet -u origin HEAD
+git -C "$TAP" push --quiet
 
 echo "✓ Released Clipstack $VERSION"
 echo "  Download: $DOWNLOAD_URL"
-echo "  Homebrew: brew install --cask chiranjeebhub/clipstack/clipstack"
+echo "  Homebrew: brew install --cask chiranjeebhub/tap/clipstack"
