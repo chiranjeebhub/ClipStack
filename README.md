@@ -2,6 +2,12 @@
 
 A native macOS clipboard manager, built with SwiftUI and AppKit. It keeps everything you copy and lets you search it and paste it back from the keyboard.
 
+## Install
+
+- **Mac App Store:** search for "ClipStack: Clipboard History".
+- **Direct download:** [latest release](https://github.com/chiranjeebhub/ClipStack/releases/latest), signed and notarized, and it updates itself.
+- **Homebrew:** `brew install --cask chiranjeebhub/tap/clipstack`
+
 ## Features
 
 - **Quick panel (⇧⌘V).** Opens a floating panel over whatever app you're in, without taking focus from it. Search as you type, filter by Text, Links, Images, Files or Pinned, and paste with ↩. ⌥↩ pastes as plain text, and ⌘1–9 pastes one of the top nine items straight away.
