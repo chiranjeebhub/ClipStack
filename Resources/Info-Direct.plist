@@ -2,44 +2,43 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>CFBundleDevelopmentRegion</key>
-    <string>en</string>
-    <key>CFBundleDisplayName</key>
-    <string>Clipstack</string>
-    <key>CFBundleExecutable</key>
-    <string>Clipstack</string>
-    <key>CFBundleIconFile</key>
-    <string>AppIcon</string>
-    <key>CFBundleIdentifier</key>
-    <string>com.chiranjeebhub.clipstack</string>
-    <key>CFBundleInfoDictionaryVersion</key>
-    <string>6.0</string>
-    <key>CFBundleName</key>
-    <string>Clipstack</string>
-    <key>CFBundlePackageType</key>
-    <string>APPL</string>
-    <key>CFBundleShortVersionString</key>
-    <string>$(MARKETING_VERSION)</string>
-    <key>CFBundleVersion</key>
-    <string>$(CURRENT_PROJECT_VERSION)</string>
-    <key>ITSAppUsesNonExemptEncryption</key>
-    <false/>
-    <key>LSApplicationCategoryType</key>
-    <string>public.app-category.productivity</string>
-    <key>LSMinimumSystemVersion</key>
-    <string>14.0</string>
-    <key>LSUIElement</key>
-    <true/>
-    <key>NSHumanReadableCopyright</key>
-    <string>© 2026 Chiranjeeb Jena</string>
-    <!-- Sparkle (direct download build only). Keep the rest of this file in step with Info.plist. -->
-    <key>SUFeedURL</key>
-    <string>https://github.com/chiranjeebhub/ClipStack/releases/latest/download/appcast.xml</string>
-    <key>SUPublicEDKey</key>
-    <string>SPARKLE_PUBLIC_KEY_NOT_SET</string>
-    <key>SUEnableInstallerLauncherService</key>
-    <true/>
-    <key>SUEnableAutomaticChecks</key>
-    <true/>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>en</string>
+	<key>CFBundleDisplayName</key>
+	<string>Clipstack</string>
+	<key>CFBundleExecutable</key>
+	<string>Clipstack</string>
+	<key>CFBundleIconFile</key>
+	<string>AppIcon</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.chiranjeebhub.clipstack</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>Clipstack</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>$(MARKETING_VERSION)</string>
+	<key>CFBundleVersion</key>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.productivity</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>14.0</string>
+	<key>LSUIElement</key>
+	<true/>
+	<key>NSHumanReadableCopyright</key>
+	<string>© 2026 Chiranjeeb Jena</string>
+	<key>SUEnableAutomaticChecks</key>
+	<true/>
+	<key>SUEnableInstallerLauncherService</key>
+	<true/>
+	<key>SUFeedURL</key>
+	<string>https://github.com/chiranjeebhub/ClipStack/releases/latest/download/appcast.xml</string>
+	<key>SUPublicEDKey</key>
+	<string>WcMaK8VOTpKw9BBdKl6N6HkQ6JJN1O5Oh0QDlN99EfA=</string>
 </dict>
 </plist>
