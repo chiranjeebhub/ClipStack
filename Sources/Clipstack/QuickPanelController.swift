@@ -46,6 +46,9 @@ final class QuickPanelController {
     private var keyMonitor: Any?
     /// The app that was frontmost when the panel opened; the paste goes there.
     private var targetApp: NSRunningApplication?
+    /// Set when the panel closes because an item was pasted or copied, so the rating prompt
+    /// doesn't appear over the app the user is pasting into.
+    private var closingAfterUse = false
 
     init(environment: AppEnvironment) {
         self.environment = environment
@@ -53,6 +56,7 @@ final class QuickPanelController {
         model.onPaste = { [weak self] item, plainText in self?.paste(item, plainText: plainText) }
         model.onCopy = { [weak self] item in
             self?.environment.pasteService.copy(item, plainText: false)
+            self?.closingAfterUse = true
             self?.hide()
         }
         model.onClose = { [weak self] in self?.hide() }
@@ -82,7 +86,12 @@ final class QuickPanelController {
 
     func hide() {
         removeKeyMonitor()
+        guard isVisible else { return }
+        // Read the flag first: ordering out resigns key, which calls back into `hide()`.
+        let afterUse = closingAfterUse
+        closingAfterUse = false
         panel?.orderOut(nil)
+        if !afterUse { ReviewPrompt.requestIfAppropriate() }
     }
 
     private func makePanel() -> QuickPanel {
@@ -110,6 +119,7 @@ final class QuickPanelController {
     }
 
     private func paste(_ item: ClipItem, plainText: Bool) {
+        closingAfterUse = true
         hide()
         environment.pasteService.paste(item, plainText: plainText, into: targetApp)
     }

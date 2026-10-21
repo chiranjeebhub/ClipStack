@@ -61,6 +61,7 @@ final class PasteService {
         }
         monitor.skipCurrentContents()
         store.touch(id: item.id)
+        ReviewPrompt.recordUse()
     }
 
     /// Copies the item and, if the user allowed it, pastes it into `target` (or whichever app is frontmost).

@@ -59,6 +59,16 @@ struct MenuBarContent: View {
             Label("Settings…", systemImage: "gearshape")
         }
         .keyboardShortcut(",", modifiers: .command)
+        if AppUpdates.isAvailable {
+            Button { AppUpdates.checkForUpdates() } label: {
+                Label("Check for Updates…", systemImage: "arrow.triangle.2.circlepath")
+            }
+        }
+        if ReviewPrompt.isAvailable {
+            Button { ReviewPrompt.openWriteReview() } label: {
+                Label("Rate Clipstack…", systemImage: "star")
+            }
+        }
         Button { NSApp.terminate(nil) } label: {
             Label("Quit Clipstack", systemImage: "power")
         }

@@ -31,6 +31,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         environment.start()
+        AppUpdates.start()
         if CloudSync.isEntitled {
             // Lets CloudKit tell this Mac when another one changed the history.
             NSApp.registerForRemoteNotifications()

@@ -17,6 +17,9 @@ enum PrefKey {
     static let hotKeyModifiers = "hotKeyModifiers"
     static let hasCompletedOnboarding = "hasCompletedOnboarding"
     static let iCloudSync = "iCloudSync"
+    static let firstLaunchDate = "firstLaunchDate"
+    static let reviewUseCount = "reviewUseCount"
+    static let lastReviewPromptVersion = "lastReviewPromptVersion"
 }
 
 enum PanelPosition: String, CaseIterable, Identifiable {
