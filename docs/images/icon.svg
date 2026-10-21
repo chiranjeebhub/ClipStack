@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3A95FF"/>
+      <stop offset="1" stop-color="#0052CC"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="125%">
+      <feDropShadow dx="0" dy="10" stdDeviation="10" flood-color="#000" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  <!-- Same artwork as Sources/ClipboardCore/StackIcon.swift: a 100-unit grid whose squircle spans 4...96. -->
+  <g transform="translate(64.174 64.174) scale(8.95652)">
+    <rect x="4" y="4" width="92" height="92" rx="22" fill="url(#bg)" filter="url(#shadow)"/>
+    <rect x="36" y="20" width="44" height="54" rx="7" fill="#fff" fill-opacity="0.3"/>
+    <rect x="31" y="25" width="44" height="54" rx="7" fill="#fff" fill-opacity="0.55"/>
+    <rect x="24" y="30" width="46" height="56" rx="7" fill="#fff"/>
+    <rect x="35" y="25" width="24" height="10" rx="4" fill="#0A5FD6" stroke="#fff" stroke-width="2.5"/>
+    <g stroke="#3A95FF" stroke-width="4" stroke-linecap="round">
+      <line x1="33" y1="48" x2="61" y2="48"/>
+      <line x1="33" y1="57" x2="61" y2="57"/>
+      <line x1="33" y1="66" x2="51" y2="66"/>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,60 @@
+<!doctype html>
+<!-- Source for social-preview.png (1280x640). Re-render with a headless browser at that size. -->
+<html><head><meta charset="utf-8"><style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{width:1280px;height:640px;overflow:hidden;font-family:Inter,system-ui,sans-serif;color:#fff;
+  background:radial-gradient(900px 600px at 18% 30%,#1b4fae 0%,rgba(27,79,174,0) 60%),
+             radial-gradient(700px 500px at 95% 110%,#0d3a8c 0%,rgba(13,58,140,0) 60%),
+             linear-gradient(135deg,#0a1530 0%,#081024 100%);position:relative}
+.grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:40px 40px;mask-image:radial-gradient(circle at 30% 45%,#000 0%,transparent 75%)}
+.left{position:absolute;left:88px;top:0;bottom:0;width:560px;display:flex;flex-direction:column;justify-content:center}
+.brand{display:flex;align-items:center;gap:22px;margin-bottom:30px}
+.brand img{width:118px;height:118px;margin:-10px}
+h1{font-family:"Inter Display",Inter,sans-serif;font-size:76px;font-weight:700;letter-spacing:-2px}
+h2{font-size:38px;font-weight:600;letter-spacing:-.6px;line-height:1.18;margin-bottom:18px}
+p{font-size:21px;line-height:1.5;color:#b9c8e6;margin-bottom:34px;max-width:500px}
+.keys{display:flex;align-items:center;gap:10px;font-size:18px;color:#b9c8e6}
+kbd{font-family:Inter,"DejaVu Sans",sans-serif;display:inline-flex;align-items:center;justify-content:center;min-width:44px;height:44px;padding:0 12px;border-radius:10px;
+  background:linear-gradient(#26324d,#1a2440);border:1px solid rgba(255,255,255,.14);box-shadow:0 3px 0 rgba(0,0,0,.45);font-size:21px;font-weight:600;color:#fff}
+.chips{display:flex;gap:10px;margin-top:26px}
+.chip{font-size:15px;font-weight:500;color:#d6e2fa;padding:7px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.05)}
+.panel{position:absolute;right:84px;top:82px;width:470px;height:476px;border-radius:20px;
+  background:rgba(30,36,52,.82);border:1px solid rgba(255,255,255,.12);
+  box-shadow:0 40px 80px rgba(0,0,0,.55),0 0 0 .5px rgba(0,0,0,.6);padding:16px;backdrop-filter:blur(20px)}
+.search{display:flex;align-items:center;gap:10px;height:44px;padding:0 14px;border-radius:11px;background:rgba(255,255,255,.07);color:#8f9bb4;font-size:16px}
+.search svg{flex:none}
+.caret{width:2px;height:18px;background:#4b9bff;margin-left:-6px}
+.filters{display:flex;gap:6px;margin:12px 0 10px}
+.f{font-size:12.5px;font-weight:500;padding:5px 10px;border-radius:7px;color:#aab5cc;background:rgba(255,255,255,.05)}
+.f.on{background:#2f7cf6;color:#fff}
+.row{display:flex;align-items:center;gap:12px;height:56px;padding:0 12px;border-radius:10px;margin-bottom:3px}
+.row.sel{background:#2f7cf6}
+.ic{flex:none;width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700}
+.t{flex:1;min-width:0}
+.t b{display:block;font-size:14.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t span{display:block;font-size:12px;color:#8f9bb4;margin-top:2px}
+.row.sel .t span{color:rgba(255,255,255,.78)}
+.n{font-size:12.5px;color:#7d89a3;font-weight:500}
+.row.sel .n{color:rgba(255,255,255,.85)}
+.mono{font-family:"JetBrains Mono",monospace;font-size:13.5px!important}
+.sw{width:18px;height:18px;border-radius:5px;background:#ff6b3d;border:1.5px solid rgba(255,255,255,.7)}
+</style></head><body>
+<div class="grid"></div>
+<div class="left">
+  <div class="brand"><img src="icon.svg" alt=""><h1>Clipstack</h1></div>
+  <h2>Clipboard history for your Mac</h2>
+  <p>Everything you copy, searchable and ready to paste again without leaving the keyboard.</p>
+  <div class="keys"><kbd>⇧</kbd><kbd>⌘</kbd><kbd>V</kbd><span style="margin-left:8px">to open your history anywhere</span></div>
+  <div class="chips"><span class="chip">Search</span><span class="chip">Pins</span><span class="chip">iCloud sync</span><span class="chip">Private</span></div>
+</div>
+<div class="panel">
+  <div class="search"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8f9bb4" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><span style="color:#fff">meet</span><span class="caret"></span></div>
+  <div class="filters"><span class="f on">All</span><span class="f">Text</span><span class="f">Links</span><span class="f">Images</span><span class="f">Files</span><span class="f">Pinned</span></div>
+  <div class="row sel"><div class="ic" style="background:rgba(255,255,255,.22)">🔗</div><div class="t"><b>https://meet.example.com/standup-weekly</b><span>Safari · just now</span></div><span class="n">⌘1</span></div>
+  <div class="row"><div class="ic" style="background:#1f6f4a">T</div><div class="t"><b>Meeting moved to Thursday 3 pm, same room</b><span>Messages · 4 min ago</span></div><span class="n">⌘2</span></div>
+  <div class="row"><div class="ic" style="background:#4a3a8c;font-family:'JetBrains Mono'">{}</div><div class="t"><b class="mono">await meetings.fetch({ week: 42 })</b><span>Xcode · 12 min ago</span></div><span class="n">⌘3</span></div>
+  <div class="row"><div class="ic" style="background:#3a3f4f"><span class="sw"></span></div><div class="t"><b>#FF6B3D</b><span>Figma · 1 hr ago</span></div><span class="n">⌘4</span></div>
+  <div class="row"><div class="ic" style="background:#8a5a12">📄</div><div class="t"><b>Meeting notes.pdf</b><span>Finder · yesterday</span></div><span class="n">⌘5</span></div>
+  <div class="row"><div class="ic" style="background:#1f6f4a">T</div><div class="t"><b>Thanks for the meeting today, notes attached</b><span>Mail · yesterday</span></div><span class="n">⌘6</span></div>
+</div>
+</body></html>
