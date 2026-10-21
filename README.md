@@ -4,7 +4,7 @@ A native macOS clipboard manager, built with SwiftUI and AppKit. It keeps everyt
 
 ## Install
 
-- **Mac App Store:** search for "ClipStack: Clipboard History".
+- **Mac App Store:** "ClipStack: Clipboard History" (in review).
 - **Direct download:** [latest release](https://github.com/chiranjeebhub/ClipStack/releases/latest), signed and notarized, and it updates itself.
 - **Homebrew:** `brew install --cask chiranjeebhub/tap/clipstack`
 
