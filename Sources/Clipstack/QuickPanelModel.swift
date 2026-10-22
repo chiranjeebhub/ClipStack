@@ -16,6 +16,10 @@ final class QuickPanelModel {
     private(set) var now = Date()
     /// Bumped each time the panel opens so the view can refocus the search field.
     private(set) var focusToken = 0
+    /// The last item pasted from the panel, and the newest item at that moment. The panel reopens on
+    /// that item, unless something new has been copied since; then it starts at the newest item.
+    @ObservationIgnored private var lastPastedID: ClipItem.ID?
+    @ObservationIgnored private var newestIDAtPaste: ClipItem.ID?
 
     @ObservationIgnored var onPaste: ((ClipItem, Bool) -> Void)?
     @ObservationIgnored var onCopy: ((ClipItem) -> Void)?
@@ -41,7 +45,12 @@ final class QuickPanelModel {
         pinnedOnly = false
         editingID = nil
         now = Date()
-        selectedID = visibleItems.first?.id
+        let items = visibleItems
+        if let lastPastedID, items.first?.id == newestIDAtPaste, items.contains(where: { $0.id == lastPastedID }) {
+            selectedID = lastPastedID
+        } else {
+            selectedID = items.first?.id
+        }
         focusToken += 1
     }
 
@@ -62,6 +71,8 @@ final class QuickPanelModel {
 
     func paste(_ item: ClipItem? = nil, plainText: Bool = false) {
         guard let item = item ?? selectedItem else { return }
+        lastPastedID = item.id
+        newestIDAtPaste = store.items.first?.id
         onPaste?(item, plainText)
     }
 

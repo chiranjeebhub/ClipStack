@@ -98,6 +98,10 @@ private struct HistoryList: View {
                     guard let id else { return }
                     proxy.scrollTo(id)
                 }
+                // Reopening on the last pasted item may not change the selection, so scroll to it anyway.
+                .onChange(of: model.focusToken) {
+                    if let id = model.selectedID { proxy.scrollTo(id) }
+                }
             }
         }
     }
