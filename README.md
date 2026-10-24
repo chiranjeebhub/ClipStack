@@ -13,6 +13,11 @@
   <img src="https://img.shields.io/badge/Swift-SwiftUI%20%2B%20AppKit-F05138?logo=swift&logoColor=white" alt="Swift, SwiftUI and AppKit">
   <a href="https://github.com/chiranjeebhub/ClipStack/releases"><img src="https://img.shields.io/github/downloads/chiranjeebhub/ClipStack/total?color=0A5FD6" alt="Downloads"></a>
   <a href="LICENSE"><img src="https://img.shields.io/github/license/chiranjeebhub/ClipStack?color=0A5FD6" alt="MIT License"></a>
+  <a href="https://www.producthunt.com/products/clipstack-4"><img src="https://img.shields.io/badge/Product%20Hunt-ClipStack-DA552F?logo=producthunt&logoColor=white" alt="ClipStack on Product Hunt"></a>
+</p>
+
+<p align="center">
+  <img src="docs/images/demo.gif" alt="Press Shift-Command-V, type to search, press Return to paste" width="760">
 </p>
 
 <p align="center">
@@ -27,6 +32,16 @@
 ---
 
 Clipstack is a native macOS clipboard manager built with SwiftUI and AppKit. It quietly keeps everything you copy, and a single shortcut brings it back: search, preview and paste straight into the app you're working in.
+
+### Why Clipstack?
+
+macOS only remembers the last thing you copied. Clipstack remembers the rest, and stays out of your way while doing it.
+
+- **Keyboard first.** ⇧⌘V, type a few letters, ↩. The panel floats over the app you're in without taking focus from it.
+- **Finds things by kind.** Filter by Text, Links, Images, Files or Pinned, with a full preview of whatever is selected.
+- **Follows you between Macs.** Optional iCloud sync brings back your history and pins after a reinstall or on another Mac, using your own private iCloud database.
+- **Private by default.** No account, no analytics, and password-manager copies are never saved.
+- **Free and open source.** MIT licensed, signed and notarized, and it updates itself.
 
 ## Install
 
@@ -88,6 +103,16 @@ macOS 14 Sonoma or later.
 ## Support
 
 Questions, bugs and feature requests are welcome. See the [support page](https://chiranjeebhub.github.io/clipstack-site/support) or [open an issue](https://github.com/chiranjeebhub/ClipStack/issues).
+
+If Clipstack saves you time, a ⭐ on this repo helps other Mac users find it.
+
+## More free Mac apps by me
+
+| | |
+| --- | --- |
+| [NotchDeck](https://github.com/chiranjeebhub/NotchDeck) | Your MacBook notch as a hub for media, files, calendar and local dev servers. |
+| [Shotwright](https://github.com/chiranjeebhub/Shotwright) | Screenshots, screen recordings and annotations for macOS. |
+| [Sweep](https://github.com/chiranjeebhub/Sweep) | A fast, native Mac cleaner. |
 
 ## Building from source
 
