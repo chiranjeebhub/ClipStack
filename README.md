@@ -26,7 +26,7 @@
   <a href="#features">Features</a> ·
   <a href="#screenshots">Screenshots</a> ·
   <a href="#privacy">Privacy</a> ·
-  <a href="https://chiranjeebhub.github.io/clipstack-site/support">Support</a> ·
+  <a href="https://clipstack.chiranjeeb.dev/support">Support</a> ·
   <a href="#building-from-source">Build from source</a>
 </p>
 
@@ -95,7 +95,7 @@ On first launch, Clipstack asks for Accessibility access. macOS requires this be
 - You can list apps whose copies are never recorded, and pause recording from the menu bar at any time.
 - No analytics, no tracking, no account.
 
-Read the full [privacy policy](https://chiranjeebhub.github.io/clipstack-site/privacy).
+Read the full [privacy policy](https://clipstack.chiranjeeb.dev/privacy).
 
 ## Requirements
 
@@ -103,7 +103,7 @@ macOS 14 Sonoma or later.
 
 ## Support
 
-Questions, bugs and feature requests are welcome. See the [support page](https://chiranjeebhub.github.io/clipstack-site/support) or [open an issue](https://github.com/chiranjeebhub/ClipStack/issues).
+Questions, bugs and feature requests are welcome. See the [support page](https://clipstack.chiranjeeb.dev/support) or [open an issue](https://github.com/chiranjeebhub/ClipStack/issues).
 
 If Clipstack saves you time, a ⭐ on this repo helps other Mac users find it.
 
