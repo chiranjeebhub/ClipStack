@@ -21,7 +21,30 @@ final class PasteService {
 
     /// macOS ties the permission to the app's signature, so after an update or reinstall the old
     /// entry can still show as switched on without applying to this copy.
-    static let staleAccessHint = "Already on? Select Clipstack in the list, click −, then add it again or relaunch Clipstack."
+    static let staleAccessHint = "Switched it on? Click Relaunch. Still not working? Select Clipstack in the list, click −, then relaunch."
+
+    private static var didAskForAccess = false
+
+    /// The first time, macOS shows its own prompt with an Open System Settings button, so Settings
+    /// is only opened directly on later presses; opening it too would bury that prompt behind it.
+    static func askForAccessibilityAccess() {
+        if didAskForAccess {
+            openAccessibilitySettings()
+        } else {
+            didAskForAccess = true
+            requestAccessibilityAccess()
+        }
+    }
+
+    /// macOS can keep answering the access check from a cache until the app restarts, so a switch
+    /// turned on in Settings may not register until Clipstack relaunches.
+    static func relaunch() {
+        let config = NSWorkspace.OpenConfiguration()
+        config.createsNewApplicationInstance = true
+        NSWorkspace.shared.openApplication(at: Bundle.main.bundleURL, configuration: config) { _, _ in
+            DispatchQueue.main.async { NSApp.terminate(nil) }
+        }
+    }
 
     nonisolated static func requestAccessibilityAccess() {
         _ = CGRequestPostEventAccess()

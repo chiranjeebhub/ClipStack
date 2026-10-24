@@ -197,6 +197,7 @@ private struct PrivacyPane: View {
     @AppStorage(PrefKey.ignoreConcealed) private var ignoreConcealed = true
     @AppStorage(PrefKey.ignoreTransient) private var ignoreTransient = true
     @State private var trusted = PasteService.hasAccessibilityAccess
+    @State private var askedForAccess = false
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     var body: some View {
@@ -218,9 +219,14 @@ private struct PrivacyPane: View {
                     if trusted {
                         Label("Allowed", systemImage: "checkmark.circle.fill").foregroundStyle(.green)
                     } else {
-                        Button("Open System Settings") {
-                            PasteService.requestAccessibilityAccess()
-                            PasteService.openAccessibilitySettings()
+                        HStack {
+                            if askedForAccess {
+                                Button("Relaunch", action: PasteService.relaunch)
+                            }
+                            Button("Open System Settings") {
+                                PasteService.askForAccessibilityAccess()
+                                askedForAccess = true
+                            }
                         }
                     }
                 } label: {

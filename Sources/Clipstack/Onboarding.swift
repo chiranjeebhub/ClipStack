@@ -47,6 +47,7 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
 struct OnboardingView: View {
     let close: () -> Void
     @State private var trusted = PasteService.hasAccessibilityAccess
+    @State private var askedForAccess = false
     @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
     @AppStorage(PrefKey.iCloudSync) private var iCloudSync = false
     private static let showsSyncStep = CloudSync.isEntitled
@@ -71,12 +72,18 @@ struct OnboardingView: View {
                 }
                 StepRow(number: 2, done: trusted, title: "Allow Accessibility access", subtitle: trusted ? "Lets Clipstack paste straight into the app you’re using" : "Lets Clipstack paste straight into the app you’re using. \(PasteService.staleAccessHint)") {
                     if !trusted {
-                        Button("Open Settings") {
-                            PasteService.requestAccessibilityAccess()
-                            PasteService.openAccessibilitySettings()
+                        HStack(spacing: 6) {
+                            if askedForAccess {
+                                Button("Relaunch", action: PasteService.relaunch)
+                                    .controlSize(.small)
+                            }
+                            Button("Open Settings") {
+                                PasteService.askForAccessibilityAccess()
+                                askedForAccess = true
+                            }
+                            .buttonStyle(.borderedProminent)
+                            .controlSize(.small)
                         }
-                        .buttonStyle(.borderedProminent)
-                        .controlSize(.small)
                     }
                 }
                 StepRow(number: 3, done: launchAtLogin, title: "Launch at login", subtitle: "So your history never has gaps") {
