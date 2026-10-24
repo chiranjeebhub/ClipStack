@@ -33,6 +33,11 @@ final class PasteService {
         } else {
             didAskForAccess = true
             requestAccessibilityAccess()
+            // macOS shows the prompt only once per app; when it doesn't appear Clipstack stays
+            // frontmost, so go straight to Settings instead.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                if NSApp.isActive { openAccessibilitySettings() }
+            }
         }
     }
 
