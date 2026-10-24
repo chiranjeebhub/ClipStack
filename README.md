@@ -17,7 +17,8 @@
 </p>
 
 <p align="center">
-  <img src="docs/images/demo.gif" alt="Press Shift-Command-V, type to search, press Return to paste" width="760">
+  <img src="docs/images/demo.gif" alt="Press Shift-Command-V, type to search, press Return to paste" width="760"><br>
+  <a href="https://www.youtube.com/watch?v=z6ZFQTvpiFs">▶ Watch Clipstack in action (video)</a>
 </p>
 
 <p align="center">
