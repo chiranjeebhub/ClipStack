@@ -46,13 +46,16 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
 @MainActor
 struct OnboardingView: View {
     let close: () -> Void
+    #if DIRECT_DISTRIBUTION
     @State private var trusted = PasteService.hasAccessibilityAccess
     @State private var askedForAccess = false
+    private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+    #endif
     @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
     @AppStorage(PrefKey.iCloudSync) private var iCloudSync = false
     private static let showsSyncStep = CloudSync.isEntitled
-    static var height: CGFloat { showsSyncStep ? 590 : 520 }
-    private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+    private static let showsAccessStep = PasteService.canPasteDirectly
+    static var height: CGFloat { 450 + (showsAccessStep ? 70 : 0) + (showsSyncStep ? 70 : 0) }
 
     var body: some View {
         VStack(spacing: 14) {
@@ -70,6 +73,7 @@ struct OnboardingView: View {
                 StepRow(number: 1, done: true, title: "Record clipboard history", subtitle: "Stored on this Mac") {
                     EmptyView()
                 }
+                #if DIRECT_DISTRIBUTION
                 StepRow(number: 2, done: trusted, title: "Allow Accessibility access", subtitle: trusted ? "Lets Clipstack paste straight into the app you’re using" : "Lets Clipstack paste straight into the app you’re using. \(PasteService.staleAccessHint)") {
                     if !trusted {
                         HStack(spacing: 6) {
@@ -86,7 +90,8 @@ struct OnboardingView: View {
                         }
                     }
                 }
-                StepRow(number: 3, done: launchAtLogin, title: "Launch at login", subtitle: "So your history never has gaps") {
+                #endif
+                StepRow(number: Self.showsAccessStep ? 3 : 2, done: launchAtLogin, title: "Launch at login", subtitle: "So your history never has gaps") {
                     if !launchAtLogin {
                         Button("Turn On") {
                             try? SMAppService.mainApp.register()
@@ -96,7 +101,7 @@ struct OnboardingView: View {
                     }
                 }
                 if Self.showsSyncStep {
-                    StepRow(number: 4, done: iCloudSync, title: "Sync with iCloud", subtitle: "Restores your history, pins and settings after a reinstall or on another Mac") {
+                    StepRow(number: Self.showsAccessStep ? 4 : 3, done: iCloudSync, title: "Sync with iCloud", subtitle: "Restores your history, pins and settings after a reinstall or on another Mac") {
                         if !iCloudSync {
                             Button("Turn On") { iCloudSync = true }
                                 .controlSize(.small)
@@ -119,7 +124,9 @@ struct OnboardingView: View {
         .padding(.horizontal, 32)
         .padding(.bottom, 24)
         .frame(width: 520, height: Self.height)
+        #if DIRECT_DISTRIBUTION
         .onReceive(timer) { _ in trusted = PasteService.hasAccessibilityAccess }
+        #endif
     }
 }
 

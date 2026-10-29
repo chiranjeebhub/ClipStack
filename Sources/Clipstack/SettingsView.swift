@@ -116,13 +116,15 @@ private struct GeneralPane: View {
                 }
             }
             Section {
-                Toggle(isOn: $pasteDirectly) {
-                    Text("Paste directly into the active app")
-                    Text("Otherwise the item is only copied to the clipboard")
+                if PasteService.canPasteDirectly {
+                    Toggle(isOn: $pasteDirectly) {
+                        Text("Paste directly into the active app")
+                        Text("Otherwise the item is only copied to the clipboard")
+                    }
                 }
-                Toggle("Always paste as plain text", isOn: $alwaysPlainText)
+                Toggle("Always \(PasteService.actionVerb.lowercased()) as plain text", isOn: $alwaysPlainText)
                 Toggle(isOn: $moveToTopOnPaste) {
-                    Text("Move pasted items to the top")
+                    Text(PasteService.canPasteDirectly ? "Move pasted items to the top" : "Move copied items to the top")
                     Text("Otherwise history stays in the order you copied things")
                 }
                 Picker("Panel position", selection: $panelPosition) {
@@ -161,9 +163,9 @@ private struct ShortcutsPane: View {
 
     private let panelShortcuts: [(String, String)] = [
         ("Move selection", "↑ ↓"),
-        ("Paste selected item", "↩"),
-        ("Paste as plain text", "⌥ ↩"),
-        ("Quick paste item 1–9", "⌘ 1–9"),
+        ("\(PasteService.actionVerb) selected item", "↩"),
+        ("\(PasteService.actionVerb) as plain text", "⌥ ↩"),
+        ("Quick \(PasteService.actionVerb.lowercased()) item 1–9", "⌘ 1–9"),
         ("Pin or unpin", "⌘ P"),
         ("Edit text", "⌘ E"),
         ("Copy without pasting", "⌘ C"),
@@ -196,9 +198,11 @@ private struct PrivacyPane: View {
     let environment: AppEnvironment
     @AppStorage(PrefKey.ignoreConcealed) private var ignoreConcealed = true
     @AppStorage(PrefKey.ignoreTransient) private var ignoreTransient = true
+    #if DIRECT_DISTRIBUTION
     @State private var trusted = PasteService.hasAccessibilityAccess
     @State private var askedForAccess = false
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+    #endif
 
     var body: some View {
         @Bindable var environment = environment
@@ -213,7 +217,12 @@ private struct PrivacyPane: View {
                     Text("Skips content apps mark as transient or auto-generated")
                 }
                 Toggle("Pause recording", isOn: $environment.isPaused)
+            } footer: {
+                if !PasteService.canPasteDirectly {
+                    Text("Your clipboard history is stored only on this Mac and never leaves it.")
+                }
             }
+            #if DIRECT_DISTRIBUTION
             Section {
                 LabeledContent {
                     if trusted {
@@ -236,9 +245,12 @@ private struct PrivacyPane: View {
             } footer: {
                 Text("Your clipboard history is stored only on this Mac and never leaves it.")
             }
+            #endif
         }
         .formStyle(.grouped)
+        #if DIRECT_DISTRIBUTION
         .onReceive(timer) { _ in trusted = PasteService.hasAccessibilityAccess }
+        #endif
     }
 }
 

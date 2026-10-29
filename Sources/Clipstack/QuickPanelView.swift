@@ -47,8 +47,8 @@ struct QuickPanelView: View {
         HStack(spacing: 18) {
             Text("↑↓ Navigate")
             Text("←→ Filter")
-            Text("↩ Paste")
-            Text("⌘1–9 Quick paste")
+            Text(PasteService.canPasteDirectly ? "↩ Paste" : "↩ Copy, then ⌘V")
+            Text(PasteService.canPasteDirectly ? "⌘1–9 Quick paste" : "⌘1–9 Quick copy")
             Text("⌘P Pin")
             Text("⇧⌘P Pinned")
             Text("⌘⌫ Delete")
@@ -172,9 +172,14 @@ private struct HistoryRow: View {
         .onTapGesture(count: 2) { model.paste(item) }
         .onTapGesture { model.selectedID = item.id }
         .contextMenu {
-            Button("Paste") { model.paste(item) }
-            Button("Paste as Plain Text") { model.paste(item, plainText: true) }
-            Button("Copy") { model.copy(item) }
+            if PasteService.canPasteDirectly {
+                Button("Paste") { model.paste(item) }
+                Button("Paste as Plain Text") { model.paste(item, plainText: true) }
+                Button("Copy") { model.copy(item) }
+            } else {
+                Button("Copy") { model.paste(item) }
+                Button("Copy as Plain Text") { model.paste(item, plainText: true) }
+            }
             Divider()
             Button(item.isPinned ? "Unpin" : "Pin") { model.togglePin(item) }
             Button("Delete", role: .destructive) { model.delete(item) }
@@ -360,11 +365,11 @@ private struct PreviewPane: View {
     private func actions(for item: ClipItem) -> some View {
         HStack(spacing: 8) {
             Button { model.paste(item) } label: {
-                Text("Paste  ↩").frame(maxWidth: .infinity)
+                Text("\(PasteService.actionVerb)  ↩").frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
             Button { model.paste(item, plainText: true) } label: {
-                Text("Paste as plain text  ⌥↩").frame(maxWidth: .infinity)
+                Text("\(PasteService.actionVerb) as plain text  ⌥↩").frame(maxWidth: .infinity)
             }
             .buttonStyle(.bordered)
         }

@@ -54,7 +54,7 @@ macOS only remembers the last thing you copied. Clipstack remembers the rest, an
 
 The direct download and the App Store version share the same history and settings, so install only one of them.
 
-On first launch, Clipstack asks for Accessibility access. macOS requires this before an app can type ⌘V into other apps. Without it, choosing an item copies it to the clipboard and you paste it yourself.
+On first launch, Clipstack asks for Accessibility access. macOS requires this before an app can type ⌘V into other apps. Without it, choosing an item copies it to the clipboard and you paste it yourself. The Mac App Store version doesn't paste for you, because App Review doesn't allow apps to use Accessibility for this. There, choosing an item copies it, and you press ⌘V. The direct download and Homebrew versions paste for you.
 
 ## Features
 

@@ -40,7 +40,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // after a reinstall or re-sign because macOS ties the permission to the app's signature.
         let firstLaunch = !UserDefaults.standard.bool(forKey: PrefKey.hasCompletedOnboarding)
         if DemoData.isEnabled { return }
-        if firstLaunch || (Preferences.pasteDirectly && !PasteService.hasAccessibilityAccess) {
+        #if DIRECT_DISTRIBUTION
+        let missingAccess = Preferences.pasteDirectly && !PasteService.hasAccessibilityAccess
+        #else
+        let missingAccess = false
+        #endif
+        if firstLaunch || missingAccess {
             showOnboarding()
         }
     }

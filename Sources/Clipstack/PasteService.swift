@@ -13,6 +13,19 @@ final class PasteService {
         self.monitor = monitor
     }
 
+    /// Pasting into another app means posting ⌘V, which needs the Accessibility permission. App
+    /// Review doesn't allow that (guideline 2.4.5), so the App Store build only copies and the user
+    /// presses ⌘V; the direct build keeps pasting.
+    #if DIRECT_DISTRIBUTION
+    static let canPasteDirectly = true
+    #else
+    static let canPasteDirectly = false
+    #endif
+
+    /// The verb for choosing an item: "Paste" when Clipstack pastes it, "Copy" when it only copies.
+    static let actionVerb = canPasteDirectly ? "Paste" : "Copy"
+
+    #if DIRECT_DISTRIBUTION
     private static var didPromptForAccess = false
 
     // The post-event access check, unlike AXIsProcessTrusted, works inside the App Sandbox.
@@ -60,6 +73,7 @@ final class PasteService {
             NSWorkspace.shared.open(url)
         }
     }
+    #endif
 
     /// Copies the item to the clipboard.
     func copy(_ item: ClipItem, plainText: Bool) {
@@ -101,6 +115,7 @@ final class PasteService {
     /// Copies the item and, if the user allowed it, pastes it into `target` (or whichever app is frontmost).
     func paste(_ item: ClipItem, plainText: Bool, into target: NSRunningApplication?) {
         copy(item, plainText: plainText || Preferences.alwaysPlainText)
+        #if DIRECT_DISTRIBUTION
         guard Preferences.pasteDirectly else { return }
         guard Self.hasAccessibilityAccess else {
             // Without Accessibility access macOS drops the ⌘V keystroke, so the item is only copied.
@@ -118,8 +133,15 @@ final class PasteService {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
             Self.postCommandV()
         }
+        #else
+        // Hand focus back to the app the user was in, so ⌘V lands there.
+        if let target, target != NSRunningApplication.current, !target.isActive {
+            target.activate()
+        }
+        #endif
     }
 
+    #if DIRECT_DISTRIBUTION
     nonisolated private static func postCommandV() {
         let source = CGEventSource(stateID: .combinedSessionState)
         let vKey: CGKeyCode = 9
@@ -130,4 +152,5 @@ final class PasteService {
         down?.post(tap: .cghidEventTap)
         up?.post(tap: .cghidEventTap)
     }
+    #endif
 }
