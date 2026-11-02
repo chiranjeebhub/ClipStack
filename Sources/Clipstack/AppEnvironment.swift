@@ -83,9 +83,20 @@ final class AppEnvironment {
         if !DemoData.isEnabled { settingsSync.push() }
         let combo = Preferences.hotKey
         if combo != registeredCombo {
-            hotKey = nil
-            hotKey = HotKey(combo: combo) { [weak self] in self?.panel.toggle() }
-            registeredCombo = combo
+            registerHotKey(combo, attemptsLeft: 10)
+        }
+    }
+
+    /// Registering fails while another copy still holds the shortcut, as it briefly does during a
+    /// relaunch, so keep trying for a few seconds.
+    private func registerHotKey(_ combo: KeyCombo, attemptsLeft: Int) {
+        hotKey = nil
+        hotKey = HotKey(combo: combo) { [weak self] in self?.panel.toggle() }
+        registeredCombo = combo
+        guard hotKey == nil, attemptsLeft > 0 else { return }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+            guard let self, self.hotKey == nil, self.registeredCombo == combo else { return }
+            self.registerHotKey(combo, attemptsLeft: attemptsLeft - 1)
         }
     }
 

@@ -200,7 +200,7 @@ private struct PrivacyPane: View {
     @AppStorage(PrefKey.ignoreTransient) private var ignoreTransient = true
     #if DIRECT_DISTRIBUTION
     @State private var trusted = PasteService.hasAccessibilityAccess
-    @State private var askedForAccess = false
+    @State private var askedForAccess = PasteService.hasAskedBefore
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     #endif
 

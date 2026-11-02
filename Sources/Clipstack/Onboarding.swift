@@ -48,7 +48,7 @@ struct OnboardingView: View {
     let close: () -> Void
     #if DIRECT_DISTRIBUTION
     @State private var trusted = PasteService.hasAccessibilityAccess
-    @State private var askedForAccess = false
+    @State private var askedForAccess = PasteService.hasAskedBefore
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     #endif
     @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
@@ -78,15 +78,19 @@ struct OnboardingView: View {
                     if !trusted {
                         HStack(spacing: 6) {
                             if askedForAccess {
-                                Button("Relaunch", action: PasteService.relaunch)
+                                Button("Open Settings", action: PasteService.openAccessibilitySettings)
                                     .controlSize(.small)
+                                Button("Relaunch", action: PasteService.relaunch)
+                                    .buttonStyle(.borderedProminent)
+                                    .controlSize(.small)
+                            } else {
+                                Button("Open Settings") {
+                                    PasteService.askForAccessibilityAccess()
+                                    askedForAccess = true
+                                }
+                                .buttonStyle(.borderedProminent)
+                                .controlSize(.small)
                             }
-                            Button("Open Settings") {
-                                PasteService.askForAccessibilityAccess()
-                                askedForAccess = true
-                            }
-                            .buttonStyle(.borderedProminent)
-                            .controlSize(.small)
                         }
                     }
                 }

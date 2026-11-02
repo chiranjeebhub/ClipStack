@@ -34,29 +34,31 @@ final class PasteService {
 
     /// macOS ties the permission to the app's signature, so after an update or reinstall the old
     /// entry can still show as switched on without applying to this copy.
-    static let staleAccessHint = "Switched it on? Click Relaunch. Still not working? Select Clipstack in the list, click −, then relaunch."
+    static let staleAccessHint = "Switched it on? Click Relaunch to finish. Still not working? Select Clipstack in the list, click −, then relaunch."
 
     private static var didAskForAccess = false
 
     /// The first time, macOS shows its own prompt with an Open System Settings button, so Settings
-    /// is only opened directly on later presses; opening it too would bury that prompt behind it.
+    /// is only opened directly on later presses; opening it too would bury that prompt behind it
+    /// and leave it on screen after the switch is turned on.
     static func askForAccessibilityAccess() {
-        if didAskForAccess {
+        if didAskForAccess || hasAskedBefore {
             openAccessibilitySettings()
         } else {
             didAskForAccess = true
+            UserDefaults.standard.set(true, forKey: askedKey)
             requestAccessibilityAccess()
-            // macOS shows the prompt only once per app; when it doesn't appear Clipstack stays
-            // frontmost, so go straight to Settings instead.
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                if NSApp.isActive { openAccessibilitySettings() }
-            }
         }
     }
+
+    /// macOS shows its prompt only once per app, so after that the button goes straight to Settings.
+    private static let askedKey = "askedForPostEventAccess"
+    static var hasAskedBefore: Bool { UserDefaults.standard.bool(forKey: askedKey) }
 
     /// macOS can keep answering the access check from a cache until the app restarts, so a switch
     /// turned on in Settings may not register until Clipstack relaunches.
     static func relaunch() {
+        // The new copy retries the global shortcut until this one has quit and released it.
         let config = NSWorkspace.OpenConfiguration()
         config.createsNewApplicationInstance = true
         NSWorkspace.shared.openApplication(at: Bundle.main.bundleURL, configuration: config) { _, _ in
