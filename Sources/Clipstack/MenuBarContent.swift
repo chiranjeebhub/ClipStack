@@ -171,8 +171,8 @@ extension KeyCombo {
         return KeyboardShortcut(key, modifiers: eventModifiers)
     }
 
-    var eventModifiers: EventModifiers {
-        var result: EventModifiers = []
+    var eventModifiers: SwiftUI.EventModifiers {
+        var result: SwiftUI.EventModifiers = []
         if modifiers.contains(.command) { result.insert(.command) }
         if modifiers.contains(.shift) { result.insert(.shift) }
         if modifiers.contains(.option) { result.insert(.option) }

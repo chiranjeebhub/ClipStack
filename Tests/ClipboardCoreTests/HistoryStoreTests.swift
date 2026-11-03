@@ -101,6 +101,23 @@ final class HistoryStoreTests: XCTestCase {
         XCTAssertEqual(reloaded.items.first?.isPinned, true)
     }
 
+    func testLoadingKeepsHistoryTheUserLimitsAllow() {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let persistence = HistoryPersistence(directory: directory)
+        let store = HistoryStore(persistence: persistence, retention: .forever, now: { [unowned self] in self.now })
+        store.add(text("recent"))
+        store.applyRemote([text("old", ago: 60 * 86_400)], deletedIDs: [])
+        persistence.flush()
+
+        // Loading with the user's limits keeps the 60-day-old item; the 30-day default wouldn't.
+        let reloaded = HistoryStore(
+            persistence: HistoryPersistence(directory: directory), retention: .forever,
+            now: { [unowned self] in self.now }
+        )
+        XCTAssertEqual(reloaded.items.map(\.text), ["recent", "old"])
+    }
+
     func testSections() {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(identifier: "UTC")!
@@ -186,7 +203,7 @@ final class HistoryStoreTests: XCTestCase {
         store.add(text("same", ago: 100))
         store.togglePin(id: store.items[0].id)
         var saved: [UUID] = []
-        store.onChange = { saved += $0 }
+        store.onChange = { ids, _ in saved += ids }
 
         // A newer unpinned copy from another Mac replaces the local one but keeps its pin.
         let newer = text("same")

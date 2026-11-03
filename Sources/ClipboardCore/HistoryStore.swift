@@ -15,8 +15,17 @@ public final class HistoryStore {
     @ObservationIgnored public var onChange: ((_ saved: [ClipItem.ID], _ deleted: [ClipItem.ID]) -> Void)?
     @ObservationIgnored private let now: () -> Date
 
-    public init(persistence: HistoryPersistence? = nil, now: @escaping () -> Date = Date.init) {
+    /// Pass the user's limits here rather than setting them afterwards: loading prunes right away,
+    /// and with the defaults it would drop history a longer retention or higher limit keeps.
+    public init(
+        persistence: HistoryPersistence? = nil,
+        retention: Retention = .month,
+        maxItems: Int = 1000,
+        now: @escaping () -> Date = Date.init
+    ) {
         self.persistence = persistence
+        self.retention = retention
+        self.maxItems = maxItems
         self.now = now
         self.items = persistence?.load() ?? []
         _ = prune()

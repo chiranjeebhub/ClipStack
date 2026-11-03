@@ -32,7 +32,10 @@ final class AppEnvironment {
         HistoryPersistence.migrateLegacyDirectory()
         if DemoData.isEnabled { DemoData.resetDirectory() }
         let directory = DemoData.isEnabled ? DemoData.directory : HistoryPersistence.defaultDirectory()
-        store = HistoryStore(persistence: HistoryPersistence(directory: directory))
+        store = HistoryStore(
+            persistence: HistoryPersistence(directory: directory),
+            retention: Preferences.retention, maxItems: Preferences.maxItems
+        )
         if DemoData.isEnabled { DemoData.seed(store) }
         monitor = PasteboardMonitor(store: store)
         pasteService = PasteService(store: store, monitor: monitor)

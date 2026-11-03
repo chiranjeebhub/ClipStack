@@ -45,6 +45,9 @@ actor CloudSync: CKSyncEngineDelegate {
     private var bufferedDeletes = Set<ClipItem.ID>()
     /// Bumped by `stop()`, so a `start()` still waiting on iCloud doesn't start syncing after sync was turned off.
     private var generation = 0
+    /// Whether sync is switched on. It can be on without an engine when iCloud wasn't available
+    /// at start, or after signing out; `fetchIfStale()` and `syncNow()` then try again.
+    private var isEnabled = false
 
     init(store: HistoryStore, status: CloudSyncStatus, directory: URL, imagesDirectory: URL) {
         self.store = store
@@ -64,6 +67,7 @@ actor CloudSync: CKSyncEngineDelegate {
     // MARK: - Lifecycle
 
     func start() async {
+        isEnabled = true
         guard engine == nil else { return }
         let startedGeneration = generation
         guard Self.isEntitled else {
@@ -119,6 +123,12 @@ actor CloudSync: CKSyncEngineDelegate {
 
     /// Turns sync off and forgets this Mac's sync state. The history itself stays, here and in iCloud.
     func stop() async {
+        isEnabled = false
+        reset()
+        await setStatus(.off)
+    }
+
+    private func reset() {
         generation += 1
         engine = nil
         systemFields = [:]
@@ -126,7 +136,6 @@ actor CloudSync: CKSyncEngineDelegate {
         bufferedDeletes = []
         try? FileManager.default.removeItem(at: stateURL)
         try? FileManager.default.removeItem(at: systemFieldsURL)
-        await setStatus(.off)
     }
 
     /// Queues local changes for upload; the engine sends them shortly after.
@@ -146,10 +155,15 @@ actor CloudSync: CKSyncEngineDelegate {
     /// as a backstop for a missed push notification.
     func fetchIfStale() async {
         guard Date().timeIntervalSince(lastFetch) > 60 else { return }
-        await fetchNow()
+        if engine == nil {
+            await retryStart()
+        } else {
+            await fetchNow()
+        }
     }
 
     func syncNow() async {
+        if engine == nil { await retryStart() }
         guard let engine else { return }
         await setStatus(.syncing)
         do {
@@ -170,6 +184,13 @@ actor CloudSync: CKSyncEngineDelegate {
         } catch {
             await setStatus(.failed(error.localizedDescription))
         }
+    }
+
+    /// Starts the engine if sync is on but couldn't start earlier (iCloud was unavailable or signed out).
+    private func retryStart() async {
+        guard isEnabled, engine == nil else { return }
+        lastFetch = Date()
+        await start()
     }
 
     private func uploadAll() async {
@@ -223,7 +244,10 @@ actor CloudSync: CKSyncEngineDelegate {
         let pending = syncEngine.state.pendingRecordZoneChanges.filter { context.options.scope.contains($0) }
         guard !pending.isEmpty else { return nil }
         return await CKSyncEngine.RecordZoneChangeBatch(pendingChanges: pending) { recordID in
-            await self.record(for: recordID)
+            if let record = await self.record(for: recordID) { return record }
+            // A skipped change otherwise stays pending for good, and sync never shows as up to date.
+            syncEngine.state.remove(pendingRecordZoneChanges: [.saveRecord(recordID)])
+            return nil
         }
     }
 
@@ -235,7 +259,8 @@ actor CloudSync: CKSyncEngineDelegate {
             await uploadAll()
         case .signOut, .switchAccounts:
             // Don't mix one account's history into another's: start over with the new account.
-            await stop()
+            // After a sign-out this waits for the next sign-in, retried by `fetchIfStale()`.
+            reset()
             await start()
         @unknown default:
             break
@@ -322,11 +347,15 @@ actor CloudSync: CKSyncEngineDelegate {
         CKRecord.ID(recordName: id.uuidString, zoneID: Self.zoneID)
     }
 
-    /// Builds the record to upload. Returning nil drops the change (the item no longer exists, or is too big).
+    /// Builds the record to upload. Returning nil drops the change (the item no longer exists, is too
+    /// big, or its image file is gone).
     private func record(for recordID: CKRecord.ID) async -> CKRecord? {
         guard let id = UUID(uuidString: recordID.recordName) else { return nil }
         let store = self.store
         guard let item = await MainActor.run(body: { store.item(id: id) }) else { return nil }
+        if let name = item.imageFile, !FileManager.default.fileExists(atPath: imagesDirectory.appendingPathComponent(name).path) {
+            return nil
+        }
 
         let record = restoredRecord(for: recordID) ?? CKRecord(recordType: Self.recordType, recordID: recordID)
         record["kind"] = item.kind.rawValue
