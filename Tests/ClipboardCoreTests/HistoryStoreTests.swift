@@ -181,6 +181,80 @@ final class HistoryStoreTests: XCTestCase {
         XCTAssertEqual(deleted, [localID, older.id])
     }
 
+    func testRemoteDuplicateKeepsEitherPin() {
+        let store = makeStore()
+        store.add(text("same", ago: 100))
+        store.togglePin(id: store.items[0].id)
+        var saved: [UUID] = []
+        store.onChange = { saved += $0 }
+
+        // A newer unpinned copy from another Mac replaces the local one but keeps its pin.
+        let newer = text("same")
+        store.applyRemote([newer], deletedIDs: [])
+        XCTAssertEqual(store.items.map(\.id), [newer.id])
+        XCTAssertTrue(store.items[0].isPinned)
+        XCTAssertEqual(saved, [newer.id], "the pin is uploaded")
+
+        // An older pinned copy loses the collapse but passes its pin on.
+        let other = makeStore()
+        other.add(text("same"))
+        var older = text("same", ago: 500)
+        older.isPinned = true
+        other.applyRemote([older], deletedIDs: [])
+        XCTAssertEqual(other.items.count, 1)
+        XCTAssertTrue(other.items[0].isPinned)
+    }
+
+    func testRemoteItemsBeyondLimitsAreNotDeletedEverywhere() {
+        let store = makeStore()
+        store.retention = .week
+        var deleted: [UUID] = []
+        store.onChange = { deleted += $1 }
+        store.applyRemote([text("from a Mac that keeps everything", ago: 60 * 86_400)], deletedIDs: [])
+        XCTAssertTrue(store.items.isEmpty)
+        XCTAssertTrue(deleted.isEmpty, "pruning synced items here must not delete them from iCloud")
+    }
+
+    func testApplyRetentionRemovesExpiredItems() {
+        var current = now
+        let store = HistoryStore(now: { current })
+        store.retention = .day
+        store.add(ClipItem(kind: .text, text: "today", createdAt: current, contentHash: "text:today"))
+        var deleted: [UUID] = []
+        store.onChange = { deleted += $1 }
+        let id = store.items[0].id
+        current = current.addingTimeInterval(2 * 86_400)
+        store.applyRetention()
+        XCTAssertTrue(store.items.isEmpty)
+        XCTAssertEqual(deleted, [id])
+    }
+
+    func testEditingIntoAnotherItemsTextMerges() {
+        let store = makeStore()
+        store.add(text("hello"))
+        store.togglePin(id: store.items[0].id)
+        let pinnedID = store.items[0].id
+        store.add(text("draft"))
+        let draftID = store.items[0].id
+        var deleted: [UUID] = []
+        store.onChange = { deleted += $1 }
+        store.updateText(id: draftID, text: "hello")
+        XCTAssertEqual(store.items.map(\.id), [draftID])
+        XCTAssertTrue(store.items[0].isPinned)
+        XCTAssertEqual(deleted, [pinnedID])
+    }
+
+    func testUnreadableEntriesAreSkippedAndBackedUp() throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let persistence = HistoryPersistence(directory: directory)
+        let json = #"[{"id":"5D7A7C55-6B39-4C64-9F0B-2F7F5C1A0001","kind":"text","text":"hi","createdAt":"2026-10-20T08:00:00Z","isPinned":true,"contentHash":"text:hi"},{"id":"5D7A7C55-6B39-4C64-9F0B-2F7F5C1A0002","kind":"hologram","createdAt":"2026-10-20T08:00:00Z","isPinned":false,"contentHash":"x"}]"#
+        try Data(json.utf8).write(to: directory.appendingPathComponent("history.json"))
+        XCTAssertEqual(persistence.load().map(\.text), ["hi"])
+        let files = try FileManager.default.contentsOfDirectory(atPath: directory.path)
+        XCTAssertTrue(files.contains { $0.hasPrefix("history-unreadable-") })
+    }
+
     func testDecodesHistoryWithoutModifiedAt() throws {
         let json = #"[{"id":"5D7A7C55-6B39-4C64-9F0B-2F7F5C1A0001","kind":"text","text":"hi","createdAt":"2026-10-20T08:00:00Z","isPinned":false,"contentHash":"text:hi"}]"#
         let decoder = JSONDecoder()

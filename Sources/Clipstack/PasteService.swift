@@ -45,10 +45,15 @@ final class PasteService {
         if didAskForAccess || hasAskedBefore {
             openAccessibilitySettings()
         } else {
-            didAskForAccess = true
-            UserDefaults.standard.set(true, forKey: askedKey)
+            markAskedForAccess()
             requestAccessibilityAccess()
         }
+    }
+
+    /// Records that macOS has shown its one-time prompt, from wherever it was triggered.
+    private static func markAskedForAccess() {
+        didAskForAccess = true
+        UserDefaults.standard.set(true, forKey: askedKey)
     }
 
     /// macOS shows its prompt only once per app, so after that the button goes straight to Settings.
@@ -61,7 +66,9 @@ final class PasteService {
         // The new copy retries the global shortcut until this one has quit and released it.
         let config = NSWorkspace.OpenConfiguration()
         config.createsNewApplicationInstance = true
-        NSWorkspace.shared.openApplication(at: Bundle.main.bundleURL, configuration: config) { _, _ in
+        NSWorkspace.shared.openApplication(at: Bundle.main.bundleURL, configuration: config) { app, error in
+            // If the new copy didn't start, keep this one running rather than leave none.
+            guard app != nil, error == nil else { return }
             DispatchQueue.main.async { NSApp.terminate(nil) }
         }
     }
@@ -124,6 +131,9 @@ final class PasteService {
             // Ask once per launch so a missing permission (e.g. after a reinstall) isn't silent.
             if !Self.didPromptForAccess {
                 Self.didPromptForAccess = true
+                // macOS shows its prompt only once, so the welcome window's button must then open
+                // Settings instead of asking again and appearing to do nothing.
+                Self.markAskedForAccess()
                 Self.requestAccessibilityAccess()
             }
             return

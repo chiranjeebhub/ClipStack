@@ -143,6 +143,10 @@ private struct GeneralPane: View {
     }
 
     private func setLaunchAtLogin(_ enabled: Bool) {
+        // Resetting the switch after an error lands here again; don't undo or retry anything then,
+        // which would also replace the real error message.
+        let status = SMAppService.mainApp.status
+        guard enabled != (status == .enabled || status == .requiresApproval) else { return }
         do {
             if enabled {
                 try SMAppService.mainApp.register()
@@ -198,6 +202,7 @@ private struct PrivacyPane: View {
     let environment: AppEnvironment
     @AppStorage(PrefKey.ignoreConcealed) private var ignoreConcealed = true
     @AppStorage(PrefKey.ignoreTransient) private var ignoreTransient = true
+    @AppStorage(PrefKey.iCloudSync) private var iCloudSync = false
     #if DIRECT_DISTRIBUTION
     @State private var trusted = PasteService.hasAccessibilityAccess
     @State private var askedForAccess = PasteService.hasAskedBefore
@@ -219,7 +224,7 @@ private struct PrivacyPane: View {
                 Toggle("Pause recording", isOn: $environment.isPaused)
             } footer: {
                 if !PasteService.canPasteDirectly {
-                    Text("Your clipboard history is stored only on this Mac and never leaves it.")
+                    Text(storageNote)
                 }
             }
             #if DIRECT_DISTRIBUTION
@@ -243,7 +248,7 @@ private struct PrivacyPane: View {
                     Text(trusted ? "Needed to paste directly into other apps" : "Needed to paste directly into other apps. \(PasteService.staleAccessHint)")
                 }
             } footer: {
-                Text("Your clipboard history is stored only on this Mac and never leaves it.")
+                Text(storageNote)
             }
             #endif
         }
@@ -251,6 +256,13 @@ private struct PrivacyPane: View {
         #if DIRECT_DISTRIBUTION
         .onReceive(timer) { _ in trusted = PasteService.hasAccessibilityAccess }
         #endif
+    }
+
+    /// Where the history is kept. With sync on it's also in iCloud, so "never leaves this Mac" would be untrue.
+    private var storageNote: String {
+        iCloudSync
+            ? "Your clipboard history is stored on this Mac and in your private iCloud database. It isn’t sent anywhere else."
+            : "Your clipboard history is stored only on this Mac and never leaves it."
     }
 }
 

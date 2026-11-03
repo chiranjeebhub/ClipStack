@@ -1,3 +1,4 @@
+import Carbon.HIToolbox
 import ClipboardCore
 import SwiftUI
 
@@ -41,7 +42,7 @@ struct MenuBarContent: View {
         Button { environment.panel.show() } label: {
             Label("Open Clipstack…", systemImage: "list.clipboard")
         }
-        .keyboardShortcut(Preferences.hotKey.keyEquivalent, modifiers: Preferences.hotKey.eventModifiers)
+        .keyboardShortcut(Preferences.hotKey.menuShortcut)
         Button { environment.isPaused.toggle() } label: {
             Label(
                 environment.isPaused ? "Resume Recording" : "Pause Recording",
@@ -153,12 +154,21 @@ enum MenuIcons {
 }
 
 extension KeyCombo {
-    /// Best-effort conversion for showing the shortcut in a SwiftUI menu.
-    var keyEquivalent: KeyEquivalent {
-        let name = Self.keyName(for: keyCode)
-        if name.count == 1, let character = name.lowercased().first { return KeyEquivalent(character) }
-        if name == "Space" { return .space }
-        return KeyEquivalent("v")
+    /// The shortcut as a SwiftUI menu shows it, or nil for keys a menu can't show (such as F5),
+    /// rather than showing a different shortcut.
+    var menuShortcut: KeyboardShortcut? {
+        let key: KeyEquivalent
+        switch Int(keyCode) {
+        case kVK_Space: key = .space
+        case kVK_Return: key = .return
+        case kVK_Tab: key = .tab
+        case kVK_Escape: key = .escape
+        default:
+            let name = Self.keyName(for: keyCode)
+            guard name.count == 1, let character = name.lowercased().first else { return nil }
+            key = KeyEquivalent(character)
+        }
+        return KeyboardShortcut(key, modifiers: eventModifiers)
     }
 
     var eventModifiers: EventModifiers {

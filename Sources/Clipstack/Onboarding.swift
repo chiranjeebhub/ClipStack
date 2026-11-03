@@ -38,7 +38,7 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
     }
 
     func windowWillClose(_ notification: Notification) {
-        NSApp.setActivationPolicy(.accessory)
+        NSApp.returnToMenuBar(closing: notification.object as? NSWindow)
         onFinish()
     }
 }

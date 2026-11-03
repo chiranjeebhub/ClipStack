@@ -10,7 +10,11 @@ final class QuickPanelModel {
     var query = "" { didSet { selectFirstIfNeeded() } }
     var filter: HistoryFilter = .all { didSet { selectFirstIfNeeded() } }
     var pinnedOnly = false { didSet { selectFirstIfNeeded() } }
-    var selectedID: ClipItem.ID?
+    var selectedID: ClipItem.ID? {
+        // Selecting another item ends editing; otherwise the keyboard stays in editing mode for an
+        // item that is no longer shown, and arrows and Return do nothing until Escape.
+        didSet { if editingID != nil && editingID != selectedID { editingID = nil } }
+    }
     var editingID: ClipItem.ID?
     /// Bumped each time the panel opens so relative times ("2 min ago") refresh.
     private(set) var now = Date()

@@ -42,11 +42,29 @@ public final class HistoryPersistence: @unchecked Sendable {
         imagesDirectory.appendingPathComponent(fileName)
     }
 
+    /// Reads the saved history. An entry that can't be read (say, one written by a newer version)
+    /// is skipped instead of failing the whole file. Whenever anything is skipped, the file is first
+    /// copied aside, because the next save replaces it and would otherwise lose that history for good.
     public func load() -> [ClipItem] {
-        guard let data = try? Data(contentsOf: historyURL) else { return [] }
+        guard let data = try? Data(contentsOf: historyURL), !data.isEmpty else { return [] }
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
-        return (try? decoder.decode([ClipItem].self, from: data)) ?? []
+        let entries = try? decoder.decode([LenientItem].self, from: data)
+        let items = entries?.compactMap(\.item) ?? []
+        if items.count != entries?.count {
+            let stamp = ISO8601DateFormatter().string(from: Date()).replacingOccurrences(of: ":", with: "-")
+            let backup = directory.appendingPathComponent("history-unreadable-\(stamp).json")
+            try? FileManager.default.copyItem(at: historyURL, to: backup)
+        }
+        return items
+    }
+
+    /// Decodes one history entry, or nil when it can't be read.
+    private struct LenientItem: Decodable {
+        let item: ClipItem?
+        init(from decoder: Decoder) throws {
+            item = try? ClipItem(from: decoder)
+        }
     }
 
     public func save(_ items: [ClipItem]) {

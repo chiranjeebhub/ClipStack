@@ -37,7 +37,19 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
     }
 
     func windowWillClose(_ notification: Notification) {
-        NSApp.setActivationPolicy(.accessory)
+        NSApp.returnToMenuBar(closing: notification.object as? NSWindow)
         ReviewPrompt.requestIfAppropriate()
+    }
+}
+
+extension NSApplication {
+    /// Drops the Dock icon again once the last of the app's ordinary windows (Settings, the welcome
+    /// window) closes. Closing one while the other is open would otherwise leave that one without
+    /// a Dock icon or ⌘-Tab entry.
+    func returnToMenuBar(closing window: NSWindow?) {
+        let othersOpen = windows.contains {
+            $0 !== window && ($0.isVisible || $0.isMiniaturized) && !($0 is NSPanel) && $0.styleMask.contains(.titled)
+        }
+        if !othersOpen { setActivationPolicy(.accessory) }
     }
 }

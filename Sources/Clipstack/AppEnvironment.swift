@@ -49,11 +49,16 @@ final class AppEnvironment {
 
     func start() {
         applyPreferences()
+        // Now that changes reach iCloud, drop what expired while the app wasn't running.
+        store.applyRetention()
         // The screenshot demo shows sample items only, so nothing copied meanwhile is recorded.
         if !DemoData.isEnabled { monitor.start() }
         // Backstop for missed push notifications from CloudKit.
         let syncTimer = Timer(timeInterval: 300, repeats: true) { [weak self] _ in
-            MainActor.assumeIsolated { self?.refreshFromCloud() }
+            MainActor.assumeIsolated {
+                self?.store.applyRetention()
+                self?.refreshFromCloud()
+            }
         }
         syncTimer.tolerance = 60
         RunLoop.main.add(syncTimer, forMode: .common)

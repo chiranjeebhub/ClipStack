@@ -50,6 +50,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
+    /// Saves are written in the background, so wait for the last one before quitting (also when
+    /// relaunching for Accessibility or installing an update).
+    func applicationWillTerminate(_ notification: Notification) {
+        environment.store.persistence?.flush()
+    }
+
     /// Launching the app again while it runs opens Settings, the way back if the menu bar icon is hidden.
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
         environment.showSettings()

@@ -65,12 +65,23 @@ public final class HistoryStore {
 
     public func updateText(id: ClipItem.ID, text: String) {
         guard let index = items.firstIndex(where: { $0.id == id }) else { return }
+        let hash = "text:" + text
         items[index].text = text
         items[index].rtf = nil
         items[index].kind = ContentClassifier.classify(text)
-        items[index].contentHash = "text:" + text
+        items[index].contentHash = hash
         items[index].modifiedAt = now()
-        save(saved: [id])
+        // Editing an item into the same text as another one merges the two, like copying it again would.
+        var deleted: [ClipItem.ID] = []
+        if let other = items.firstIndex(where: { $0.contentHash == hash && $0.id != id }) {
+            let duplicate = items.remove(at: other)
+            if duplicate.isPinned, let edited = items.firstIndex(where: { $0.id == id }) {
+                items[edited].isPinned = true
+            }
+            cleanUp([duplicate])
+            deleted.append(duplicate.id)
+        }
+        save(saved: [id], deleted: deleted)
     }
 
     public func delete(id: ClipItem.ID) {
@@ -94,6 +105,8 @@ public final class HistoryStore {
     /// Images must already be in the image folder under the items' `imageFile` names.
     public func applyRemote(_ remoteItems: [ClipItem], deletedIDs: [ClipItem.ID]) {
         var deletedDuplicates: [ClipItem.ID] = []
+        /// Survivors of a collapse that took over the other copy's pin, so the pin is uploaded.
+        var repinned: [ClipItem.ID] = []
 
         let deleted = Set(deletedIDs)
         let removed = items.filter { deleted.contains($0.id) }
@@ -109,12 +122,24 @@ public final class HistoryStore {
                 }
                 items[index] = remote
             } else if let index = items.firstIndex(where: { $0.contentHash == remote.contentHash }) {
+                // A pin on either copy survives the collapse: it may be the only pinned copy left.
                 let local = items[index]
                 if remote.createdAt > local.createdAt {
-                    items[index] = remote
+                    var survivor = remote
+                    if local.isPinned && !survivor.isPinned {
+                        survivor.isPinned = true
+                        survivor.modifiedAt = now()
+                        repinned.append(survivor.id)
+                    }
+                    items[index] = survivor
                     cleanUp([local], keepingImage: remote.imageFile)
                     deletedDuplicates.append(local.id)
                 } else {
+                    if remote.isPinned && !local.isPinned {
+                        items[index].isPinned = true
+                        items[index].modifiedAt = now()
+                        repinned.append(local.id)
+                    }
                     if let name = remote.imageFile, name != local.imageFile {
                         persistence?.deleteImage(named: name)
                     }
@@ -126,10 +151,21 @@ public final class HistoryStore {
         }
 
         items.sort { $0.createdAt > $1.createdAt }
+        // Items beyond this Mac's limits are dropped here but not deleted from iCloud. Right after a
+        // reinstall the synced settings may not have arrived yet, and the default 30 days and 1,000
+        // items would otherwise delete older history from iCloud and from every other Mac.
         let pruned = prune()
         persistence?.save(items)
-        let reported = deletedDuplicates + pruned
-        if !reported.isEmpty { onChange?([], reported) }
+        let saved = repinned.filter { !pruned.contains($0) }
+        if !saved.isEmpty || !deletedDuplicates.isEmpty { onChange?(saved, deletedDuplicates) }
+    }
+
+    /// Applies the retention period now. Copying something also does, but an idle Mac needs this
+    /// so expired items don't linger, and so items that expired while the app was closed are
+    /// removed from iCloud too.
+    public func applyRetention() {
+        let pruned = prune()
+        if !pruned.isEmpty { save(deleted: pruned) }
     }
 
     public func filtered(_ filter: HistoryFilter = .all, pinnedOnly: Bool = false, query: String = "") -> [ClipItem] {

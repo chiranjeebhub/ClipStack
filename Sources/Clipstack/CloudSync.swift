@@ -43,6 +43,8 @@ actor CloudSync: CKSyncEngineDelegate {
     /// Changes made before the engine is running (it starts asynchronously at launch).
     private var bufferedSaves = Set<ClipItem.ID>()
     private var bufferedDeletes = Set<ClipItem.ID>()
+    /// Bumped by `stop()`, so a `start()` still waiting on iCloud doesn't start syncing after sync was turned off.
+    private var generation = 0
 
     init(store: HistoryStore, status: CloudSyncStatus, directory: URL, imagesDirectory: URL) {
         self.store = store
@@ -63,6 +65,7 @@ actor CloudSync: CKSyncEngineDelegate {
 
     func start() async {
         guard engine == nil else { return }
+        let startedGeneration = generation
         guard Self.isEntitled else {
             await setStatus(.unavailable("This build isn’t signed for iCloud. Build it with scripts/build-signed.sh."))
             return
@@ -87,6 +90,9 @@ actor CloudSync: CKSyncEngineDelegate {
             return
         }
 
+        // Sync was turned off, or another start finished, while this one waited on iCloud.
+        guard generation == startedGeneration, engine == nil else { return }
+
         let savedState = loadState()
         systemFields = loadSystemFields()
         let configuration = CKSyncEngine.Configuration(
@@ -103,6 +109,7 @@ actor CloudSync: CKSyncEngineDelegate {
             engine.state.add(pendingDatabaseChanges: [.saveZone(CKRecordZone(zoneID: Self.zoneID))])
             await uploadAll()
         }
+        guard self.engine === engine else { return }
         enqueue(saved: Array(bufferedSaves), deleted: Array(bufferedDeletes))
         bufferedSaves = []
         bufferedDeletes = []
@@ -112,6 +119,7 @@ actor CloudSync: CKSyncEngineDelegate {
 
     /// Turns sync off and forgets this Mac's sync state. The history itself stays, here and in iCloud.
     func stop() async {
+        generation += 1
         engine = nil
         systemFields = [:]
         bufferedSaves = []
@@ -172,6 +180,9 @@ actor CloudSync: CKSyncEngineDelegate {
     // MARK: - CKSyncEngineDelegate
 
     func handleEvent(_ event: CKSyncEngine.Event, syncEngine: CKSyncEngine) async {
+        // An engine from before sync was turned off or the account changed can still deliver events.
+        // Acting on them would overwrite the current engine's saved state with the old one's.
+        guard syncEngine === engine else { return }
         switch event {
         case .stateUpdate(let update):
             saveState(update.stateSerialization)
@@ -208,6 +219,7 @@ actor CloudSync: CKSyncEngineDelegate {
     func nextRecordZoneChangeBatch(
         _ context: CKSyncEngine.SendChangesContext, syncEngine: CKSyncEngine
     ) async -> CKSyncEngine.RecordZoneChangeBatch? {
+        guard syncEngine === engine else { return nil }
         let pending = syncEngine.state.pendingRecordZoneChanges.filter { context.options.scope.contains($0) }
         guard !pending.isEmpty else { return nil }
         return await CKSyncEngine.RecordZoneChangeBatch(pendingChanges: pending) { recordID in
@@ -405,7 +417,7 @@ actor CloudSync: CKSyncEngineDelegate {
     }
 
     private func saveState(_ state: CKSyncEngine.State.Serialization) {
-        guard engine != nil, let data = try? JSONEncoder().encode(state) else { return }
+        guard let data = try? JSONEncoder().encode(state) else { return }
         try? data.write(to: stateURL, options: .atomic)
     }
 
