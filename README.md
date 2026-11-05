@@ -107,14 +107,6 @@ Questions, bugs and feature requests are welcome. See the [support page](https:/
 
 If Clipstack saves you time, a ⭐ on this repo helps other Mac users find it.
 
-## More free Mac apps by me
-
-| | |
-| --- | --- |
-| [NotchDeck](https://github.com/chiranjeebhub/NotchDeck) | Your MacBook notch as a hub for media, files, calendar and local dev servers. |
-| [Shotwright](https://github.com/chiranjeebhub/Shotwright) | Screenshots, screen recordings and annotations for macOS. |
-| [Sweep](https://github.com/chiranjeebhub/Sweep) | A fast, native Mac cleaner. |
-
 ## Building from source
 
 Building needs Xcode 15 or later.
