@@ -180,6 +180,9 @@ private struct HistoryRow: View {
                 Button("Copy") { model.paste(item) }
                 Button("Copy as Plain Text") { model.paste(item, plainText: true) }
             }
+            if item.kind == .image {
+                Button("Save Image…") { model.saveImage(item) }
+            }
             Divider()
             Button(item.isPinned ? "Unpin" : "Pin") { model.togglePin(item) }
             Button("Delete", role: .destructive) { model.delete(item) }
@@ -232,6 +235,13 @@ private struct PreviewPane: View {
                 .padding(.vertical, 3)
                 .background(RoundedRectangle(cornerRadius: 5).fill(Color.primary.opacity(0.08)))
             Spacer()
+            if item.kind == .image {
+                Button { model.saveImage(item) } label: {
+                    Image(systemName: "square.and.arrow.down")
+                }
+                .help("Save Image…")
+                .accessibilityLabel("Save Image")
+            }
             Button { model.togglePin(item) } label: {
                 Image(systemName: item.isPinned ? "pin.fill" : "pin")
             }

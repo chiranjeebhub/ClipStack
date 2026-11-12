@@ -59,6 +59,12 @@ final class QuickPanelController {
             self?.closingAfterUse = true
             self?.hide()
         }
+        model.onSaveImage = { [weak self] item in
+            guard let self else { return }
+            self.closingAfterUse = true
+            self.hide()
+            ImageSaver.save(item, store: self.environment.store)
+        }
         model.onClose = { [weak self] in self?.hide() }
     }
 

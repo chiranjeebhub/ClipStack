@@ -27,6 +27,7 @@ final class QuickPanelModel {
 
     @ObservationIgnored var onPaste: ((ClipItem, Bool) -> Void)?
     @ObservationIgnored var onCopy: ((ClipItem) -> Void)?
+    @ObservationIgnored var onSaveImage: ((ClipItem) -> Void)?
     @ObservationIgnored var onClose: (() -> Void)?
 
     init(store: HistoryStore) {
@@ -82,6 +83,10 @@ final class QuickPanelModel {
 
     func copy(_ item: ClipItem) {
         onCopy?(item)
+    }
+
+    func saveImage(_ item: ClipItem) {
+        onSaveImage?(item)
     }
 
     func togglePin(_ item: ClipItem? = nil) {
