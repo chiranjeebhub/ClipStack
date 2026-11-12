@@ -288,4 +288,19 @@ final class HistoryStoreTests: XCTestCase {
         let files = ClipItem(kind: .file, fileURLs: [URL(fileURLWithPath: "/a/one.pdf"), URL(fileURLWithPath: "/a/two.pdf")], contentHash: "f")
         XCTAssertEqual(files.title, "one.pdf and 1 more")
     }
+
+    func testRecognizedTextIsSearchableAndNotSynced() {
+        let store = makeStore()
+        var changes = 0
+        store.onChange = { _, _ in changes += 1 }
+        store.add(ClipItem(kind: .image, imageFile: "a.png", contentHash: "image:a"))
+        let id = store.items[0].id
+        changes = 0
+        store.setRecognizedText([id: "Invoice 4021"])
+        XCTAssertEqual(changes, 0)
+        XCTAssertEqual(store.filtered(query: "invoice").map(\.id), [id])
+        // Copying the same image again keeps the text instead of recognizing it again.
+        store.add(ClipItem(kind: .image, imageFile: "a.png", contentHash: "image:a"))
+        XCTAssertEqual(store.items[0].recognizedText, "Invoice 4021")
+    }
 }

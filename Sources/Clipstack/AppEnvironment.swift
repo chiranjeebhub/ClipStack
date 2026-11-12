@@ -11,6 +11,7 @@ final class AppEnvironment {
     @ObservationIgnored let pasteService: PasteService
     let syncStatus = CloudSyncStatus()
     @ObservationIgnored let cloudSync: CloudSync
+    @ObservationIgnored private lazy var textRecognizer = TextRecognizer(store: store)
     @ObservationIgnored private let settingsSync = SettingsSync()
     @ObservationIgnored private(set) lazy var panel = QuickPanelController(environment: self)
     @ObservationIgnored private lazy var settingsWindow = SettingsWindowController(environment: self)
@@ -52,6 +53,7 @@ final class AppEnvironment {
 
     func start() {
         applyPreferences()
+        textRecognizer.start()
         // Now that changes reach iCloud, drop what expired while the app wasn't running.
         store.applyRetention()
         // The screenshot demo shows sample items only, so nothing copied meanwhile is recorded.

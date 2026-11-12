@@ -181,6 +181,8 @@ private struct HistoryRow: View {
                 Button("Copy as Plain Text") { model.paste(item, plainText: true) }
             }
             if item.kind == .image {
+                Button("Copy Text from Image") { model.copyText(from: item) }
+                    .disabled((item.recognizedText ?? "").isEmpty)
                 Button("Save Image…") { model.saveImage(item) }
             }
             Divider()
@@ -235,6 +237,13 @@ private struct PreviewPane: View {
                 .padding(.vertical, 3)
                 .background(RoundedRectangle(cornerRadius: 5).fill(Color.primary.opacity(0.08)))
             Spacer()
+            if item.kind == .image, let text = item.recognizedText, !text.isEmpty {
+                Button { model.copyText(from: item) } label: {
+                    Image(systemName: "text.viewfinder")
+                }
+                .help("Copy Text from Image")
+                .accessibilityLabel("Copy Text from Image")
+            }
             if item.kind == .image {
                 Button { model.saveImage(item) } label: {
                     Image(systemName: "square.and.arrow.down")

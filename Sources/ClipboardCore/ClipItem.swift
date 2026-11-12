@@ -37,6 +37,9 @@ public struct ClipItem: Identifiable, Codable, Equatable, Hashable, Sendable {
     public var isPinned: Bool
     /// Stable fingerprint of the content, used to collapse repeated copies into one entry.
     public var contentHash: String
+    /// Text found in an image item by on-device text recognition; empty when it has none. Each Mac
+    /// recognizes its own images, so this isn't synced.
+    public var recognizedText: String?
 
     public init(
         id: UUID = UUID(),
@@ -52,7 +55,8 @@ public struct ClipItem: Identifiable, Codable, Equatable, Hashable, Sendable {
         createdAt: Date = Date(),
         modifiedAt: Date? = nil,
         isPinned: Bool = false,
-        contentHash: String
+        contentHash: String,
+        recognizedText: String? = nil
     ) {
         self.id = id
         self.kind = kind
@@ -68,6 +72,7 @@ public struct ClipItem: Identifiable, Codable, Equatable, Hashable, Sendable {
         self.modifiedAt = modifiedAt
         self.isPinned = isPinned
         self.contentHash = contentHash
+        self.recognizedText = recognizedText
     }
 
     public var lastModified: Date { modifiedAt ?? createdAt }
@@ -108,7 +113,7 @@ public struct ClipItem: Identifiable, Codable, Equatable, Hashable, Sendable {
 
     /// Text the search field matches against.
     var searchableText: String {
-        var parts: [String] = [text ?? "", sourceAppName ?? ""]
+        var parts: [String] = [text ?? "", sourceAppName ?? "", recognizedText ?? ""]
         parts.append(contentsOf: (fileURLs ?? []).map(\.path))
         return parts.joined(separator: "\n")
     }

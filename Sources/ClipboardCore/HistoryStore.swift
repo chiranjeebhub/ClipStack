@@ -47,6 +47,7 @@ public final class HistoryStore {
             let existing = items.remove(at: index)
             item.id = existing.id
             item.isPinned = existing.isPinned
+            if item.recognizedText == nil { item.recognizedText = existing.recognizedText }
             if let old = existing.imageFile, old != item.imageFile {
                 persistence?.deleteImage(named: old)
             }
@@ -93,6 +94,17 @@ public final class HistoryStore {
         save(saved: [id], deleted: deleted)
     }
 
+    /// Stores text recognized in images. It stays on this Mac, so nothing is reported for sync.
+    public func setRecognizedText(_ texts: [ClipItem.ID: String]) {
+        var changed = false
+        for (id, text) in texts {
+            guard let index = items.firstIndex(where: { $0.id == id }) else { continue }
+            items[index].recognizedText = text
+            changed = true
+        }
+        if changed { persistence?.save(items) }
+    }
+
     public func delete(id: ClipItem.ID) {
         guard let index = items.firstIndex(where: { $0.id == id }) else { return }
         let removed = items.remove(at: index)
@@ -129,7 +141,9 @@ public final class HistoryStore {
                 if let old = local.imageFile, old != remote.imageFile {
                     persistence?.deleteImage(named: old)
                 }
-                items[index] = remote
+                var updated = remote
+                if updated.contentHash == local.contentHash { updated.recognizedText = local.recognizedText }
+                items[index] = updated
             } else if let index = items.firstIndex(where: { $0.contentHash == remote.contentHash }) {
                 // A pin on either copy survives the collapse: it may be the only pinned copy left.
                 let local = items[index]

@@ -65,6 +65,13 @@ final class QuickPanelController {
             self.hide()
             ImageSaver.save(item, store: self.environment.store)
         }
+        model.onCopyText = { [weak self] text in
+            // Recorded by the clipboard monitor like any other copy, so it shows up as a text item.
+            NSPasteboard.general.clearContents()
+            NSPasteboard.general.setString(text, forType: .string)
+            self?.closingAfterUse = true
+            self?.hide()
+        }
         model.onClose = { [weak self] in self?.hide() }
     }
 

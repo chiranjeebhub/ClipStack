@@ -61,6 +61,7 @@ On first launch, Clipstack asks for Accessibility access. macOS requires this be
 - **Quick panel (⇧⌘V).** Opens a floating panel over whatever app you're in, without taking focus from it. Search as you type, filter by Text, Links, Images, Files or Pinned, and paste with ↩. ⌥↩ pastes as plain text, and ⌘1–9 pastes one of the top nine items straight away.
 - **Source apps.** Every item records the app it was copied from, and the list shows that app's icon and name.
 - **Rich previews.** Text, code (monospaced), links, images, files and colors each get their own preview. Edit text items in place with ⌘E.
+- **Text in images.** Clipstack reads the text in copied images on your Mac, so searching finds screenshots by what they say. Right-click an image to copy its text or save it as a PNG.
 - **Pinning.** ⌘P pins an item. Pinned items are never removed by the history limits, and they appear at the top of the menu bar menu with ⌥1–9 shortcuts.
 - **Menu bar menu.** Pinned and recent items, Pause Recording, Clear History and Settings.
 - **iCloud sync.** History, pinned items, settings and your shortcut sync through your private iCloud database, so they come back after a reinstall and show up on your other Macs. It's off until you turn it on.

@@ -28,6 +28,7 @@ final class QuickPanelModel {
     @ObservationIgnored var onPaste: ((ClipItem, Bool) -> Void)?
     @ObservationIgnored var onCopy: ((ClipItem) -> Void)?
     @ObservationIgnored var onSaveImage: ((ClipItem) -> Void)?
+    @ObservationIgnored var onCopyText: ((String) -> Void)?
     @ObservationIgnored var onClose: (() -> Void)?
 
     init(store: HistoryStore) {
@@ -87,6 +88,12 @@ final class QuickPanelModel {
 
     func saveImage(_ item: ClipItem) {
         onSaveImage?(item)
+    }
+
+    /// Copies the text recognized in an image item.
+    func copyText(from item: ClipItem) {
+        guard let text = item.recognizedText, !text.isEmpty else { return }
+        onCopyText?(text)
     }
 
     func togglePin(_ item: ClipItem? = nil) {
