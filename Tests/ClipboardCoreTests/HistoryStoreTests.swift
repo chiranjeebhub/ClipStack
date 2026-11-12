@@ -293,14 +293,14 @@ final class HistoryStoreTests: XCTestCase {
         let store = makeStore()
         var changes = 0
         store.onChange = { _, _ in changes += 1 }
-        store.add(ClipItem(kind: .image, imageFile: "a.png", contentHash: "image:a"))
+        store.add(ClipItem(kind: .image, imageFile: "a.png", createdAt: now, contentHash: "image:a"))
         let id = store.items[0].id
         changes = 0
         store.setRecognizedText([id: "Invoice 4021"])
         XCTAssertEqual(changes, 0)
         XCTAssertEqual(store.filtered(query: "invoice").map(\.id), [id])
         // Copying the same image again keeps the text instead of recognizing it again.
-        store.add(ClipItem(kind: .image, imageFile: "a.png", contentHash: "image:a"))
+        store.add(ClipItem(kind: .image, imageFile: "a.png", createdAt: now, contentHash: "image:a"))
         XCTAssertEqual(store.items[0].recognizedText, "Invoice 4021")
     }
 }
