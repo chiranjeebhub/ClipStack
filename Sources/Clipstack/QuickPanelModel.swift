@@ -16,6 +16,8 @@ final class QuickPanelModel {
         didSet { if editingID != nil && editingID != selectedID { editingID = nil } }
     }
     var editingID: ClipItem.ID?
+    /// The image whose text is being read for Copy Text, so its button can show progress.
+    var readingTextID: ClipItem.ID?
     /// Bumped each time the panel opens so relative times ("2 min ago") refresh.
     private(set) var now = Date()
     /// Bumped each time the panel opens so the view can refocus the search field.

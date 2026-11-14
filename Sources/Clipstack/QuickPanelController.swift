@@ -67,8 +67,11 @@ final class QuickPanelController {
         }
         model.onCopyText = { [weak self] item in
             guard let self else { return }
+            guard self.model.readingTextID == nil else { return }
             Task { @MainActor in
+                self.model.readingTextID = item.id
                 let text = await self.environment.textRecognizer.text(for: item)
+                self.model.readingTextID = nil
                 // Nothing to copy: the button turns off now that the image is known to have no text.
                 guard !text.isEmpty else { return }
                 // Recorded by the clipboard monitor like any other copy, so it shows up as a text item.

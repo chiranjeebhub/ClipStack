@@ -240,10 +240,14 @@ private struct PreviewPane: View {
             Spacer()
             // What this kind of item can do, spelled out, then pin and delete as icons.
             if item.kind == .image {
+                let reading = model.readingTextID == item.id
                 Button { model.copyText(from: item) } label: {
-                    PreviewActionLabel(title: "Copy Text", systemImage: "text.viewfinder")
+                    PreviewActionLabel(
+                        title: reading ? "Reading…" : item.recognizedText == "" ? "No Text" : "Copy Text",
+                        systemImage: "text.viewfinder", isBusy: reading
+                    )
                 }
-                .disabled(item.recognizedText == "")
+                .disabled(item.recognizedText == "" || reading)
                 .help(item.recognizedText == "" ? "No text found in this image" : "Copy the text in this image")
                 Button { model.saveImage(item) } label: {
                     PreviewActionLabel(title: "Save", systemImage: "square.and.arrow.down")
@@ -469,12 +473,17 @@ private struct PinnedToggle: View {
 private struct PreviewActionLabel: View {
     var title: String?
     let systemImage: String
+    var isBusy = false
 
     var body: some View {
         HStack(spacing: 5) {
-            Image(systemName: systemImage)
-                .font(.system(size: 12, weight: .medium))
-                .frame(width: 14)
+            if isBusy {
+                ProgressView().controlSize(.mini).frame(width: 14)
+            } else {
+                Image(systemName: systemImage)
+                    .font(.system(size: 12, weight: .medium))
+                    .frame(width: 14)
+            }
             if let title {
                 Text(title).font(.system(size: 12, weight: .medium))
             }
