@@ -65,12 +65,18 @@ final class QuickPanelController {
             self.hide()
             ImageSaver.save(item, store: self.environment.store)
         }
-        model.onCopyText = { [weak self] text in
-            // Recorded by the clipboard monitor like any other copy, so it shows up as a text item.
-            NSPasteboard.general.clearContents()
-            NSPasteboard.general.setString(text, forType: .string)
-            self?.closingAfterUse = true
-            self?.hide()
+        model.onCopyText = { [weak self] item in
+            guard let self else { return }
+            Task { @MainActor in
+                let text = await self.environment.textRecognizer.text(for: item)
+                // Nothing to copy: the button turns off now that the image is known to have no text.
+                guard !text.isEmpty else { return }
+                // Recorded by the clipboard monitor like any other copy, so it shows up as a text item.
+                NSPasteboard.general.clearContents()
+                NSPasteboard.general.setString(text, forType: .string)
+                self.closingAfterUse = true
+                self.hide()
+            }
         }
         model.onClose = { [weak self] in self?.hide() }
     }

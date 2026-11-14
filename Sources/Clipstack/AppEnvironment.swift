@@ -11,7 +11,7 @@ final class AppEnvironment {
     @ObservationIgnored let pasteService: PasteService
     let syncStatus = CloudSyncStatus()
     @ObservationIgnored let cloudSync: CloudSync
-    @ObservationIgnored private lazy var textRecognizer = TextRecognizer(store: store)
+    @ObservationIgnored private(set) lazy var textRecognizer = TextRecognizer(store: store)
     @ObservationIgnored private let settingsSync = SettingsSync()
     @ObservationIgnored private(set) lazy var panel = QuickPanelController(environment: self)
     @ObservationIgnored private lazy var settingsWindow = SettingsWindowController(environment: self)
