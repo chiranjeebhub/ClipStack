@@ -1,7 +1,10 @@
 import AppKit
 import ClipboardCore
 import Observation
+import OSLog
 import Vision
+
+private let log = Logger(subsystem: "com.chiranjeebhub.clipstack", category: "ocr")
 
 /// Reads the text in image items on this Mac, so it can be searched and copied.
 @MainActor
@@ -67,6 +70,7 @@ final class TextRecognizer {
         guard !isRunning else { return }
         let batch = nextBatch()
         guard !batch.isEmpty else { return }
+        log.notice("Reading \(batch.count, privacy: .public) images")
         isRunning = true
         Task.detached(priority: .utility) { [weak self] in
             var texts: [ClipItem.ID: String] = [:]
@@ -79,6 +83,7 @@ final class TextRecognizer {
     }
 
     private func finish(texts: [ClipItem.ID: String], failed: [ClipItem.ID]) {
+        log.notice("Read \(texts.count, privacy: .public) images (\(texts.values.filter { !$0.isEmpty }.count, privacy: .public) with text), \(failed.count, privacy: .public) failed")
         self.failed.formUnion(failed)
         // Saved a few at a time, so a long first pass over existing history doesn't rewrite the
         // history file for every image.
@@ -92,7 +97,10 @@ final class TextRecognizer {
         // Each pass decodes a full-size image; drain it before the next one.
         autoreleasepool {
             guard let source = CGImageSourceCreateWithURL(url as CFURL, nil),
-                  let image = CGImageSourceCreateImageAtIndex(source, 0, nil) else { return nil }
+                  let image = CGImageSourceCreateImageAtIndex(source, 0, nil) else {
+                log.error("Couldn't load image \(url.lastPathComponent, privacy: .public)")
+                return nil
+            }
             guard let detected = recognizeText(in: image, detectLanguage: true) else { return nil }
             if !detected.isEmpty { return detected }
             // Language detection can come back empty on text it reads fine with the default languages.
@@ -108,6 +116,7 @@ final class TextRecognizer {
         do {
             try VNImageRequestHandler(cgImage: image).perform([request])
         } catch {
+            log.error("Text recognition failed: \(error.localizedDescription, privacy: .public)")
             return nil
         }
         return (request.results ?? [])
