@@ -105,6 +105,16 @@ public final class HistoryStore {
         if changed { persistence?.save(items) }
     }
 
+    /// Forgets "no text" results, so those images are read again.
+    public func clearEmptyRecognizedText() {
+        var changed = false
+        for index in items.indices where items[index].recognizedText == "" {
+            items[index].recognizedText = nil
+            changed = true
+        }
+        if changed { persistence?.save(items) }
+    }
+
     public func delete(id: ClipItem.ID) {
         guard let index = items.firstIndex(where: { $0.id == id }) else { return }
         let removed = items.remove(at: index)

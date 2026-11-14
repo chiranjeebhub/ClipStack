@@ -17,9 +17,16 @@ final class TextRecognizer {
     }
 
     func start() {
+        // 1.3 could save "no text" for images it failed to read; read those once more.
+        if !UserDefaults.standard.bool(forKey: Self.retriedKey) {
+            store.clearEmptyRecognizedText()
+            UserDefaults.standard.set(true, forKey: Self.retriedKey)
+        }
         observe()
         scan()
     }
+
+    private static let retriedKey = "retriedEmptyRecognizedText"
 
     /// Returns the text in an image item, reading it right away if the background pass hasn't
     /// got to it yet. Empty when the image has no text.
@@ -82,12 +89,22 @@ final class TextRecognizer {
 
     /// The text in the image, empty when it has none, or nil when the image couldn't be read.
     nonisolated static func recognizeText(at url: URL) -> String? {
-        guard let source = CGImageSourceCreateWithURL(url as CFURL, nil),
-              let image = CGImageSourceCreateImageAtIndex(source, 0, nil) else { return nil }
+        // Each pass decodes a full-size image; drain it before the next one.
+        autoreleasepool {
+            guard let source = CGImageSourceCreateWithURL(url as CFURL, nil),
+                  let image = CGImageSourceCreateImageAtIndex(source, 0, nil) else { return nil }
+            guard let detected = recognizeText(in: image, detectLanguage: true) else { return nil }
+            if !detected.isEmpty { return detected }
+            // Language detection can come back empty on text it reads fine with the default languages.
+            return recognizeText(in: image, detectLanguage: false)
+        }
+    }
+
+    nonisolated private static func recognizeText(in image: CGImage, detectLanguage: Bool) -> String? {
         let request = VNRecognizeTextRequest()
         request.recognitionLevel = .accurate
         request.usesLanguageCorrection = true
-        request.automaticallyDetectsLanguage = true
+        request.automaticallyDetectsLanguage = detectLanguage
         do {
             try VNImageRequestHandler(cgImage: image).perform([request])
         } catch {

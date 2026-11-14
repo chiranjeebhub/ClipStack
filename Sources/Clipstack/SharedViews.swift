@@ -113,13 +113,33 @@ struct KindBadge: View {
     }
 }
 
+/// Downscaled copies of stored images. Keeping full-size screenshots around for small row icons
+/// cost over a gigabyte of memory with a long image history.
 enum Thumbnails {
-    private static let cache = NSCache<NSURL, NSImage>()
+    /// Large enough for the row and menu icons on a Retina display.
+    static let iconSize = 160
+    /// Large enough for the preview pane.
+    static let previewSize = 1600
 
-    static func image(at url: URL) -> NSImage? {
-        if let cached = cache.object(forKey: url as NSURL) { return cached }
-        guard let image = NSImage(contentsOf: url) else { return nil }
-        cache.setObject(image, forKey: url as NSURL)
+    private static let cache: NSCache<NSString, NSImage> = {
+        let cache = NSCache<NSString, NSImage>()
+        cache.totalCostLimit = 200 * 1024 * 1024
+        return cache
+    }()
+
+    static func image(at url: URL, maxPixels: Int = iconSize) -> NSImage? {
+        let key = "\(maxPixels)|\(url.path)" as NSString
+        if let cached = cache.object(forKey: key) { return cached }
+        let options: [CFString: Any] = [
+            kCGImageSourceCreateThumbnailFromImageAlways: true,
+            kCGImageSourceCreateThumbnailWithTransform: true,
+            kCGImageSourceThumbnailMaxPixelSize: maxPixels,
+        ]
+        guard let source = CGImageSourceCreateWithURL(url as CFURL, nil),
+              let cgImage = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary) else { return nil }
+        // Points are pixels at 2x, so the image draws at its natural size on a Retina display.
+        let image = NSImage(cgImage: cgImage, size: NSSize(width: cgImage.width / 2, height: cgImage.height / 2))
+        cache.setObject(image, forKey: key, cost: cgImage.bytesPerRow * cgImage.height)
         return image
     }
 }

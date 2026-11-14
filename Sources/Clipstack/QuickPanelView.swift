@@ -302,7 +302,7 @@ private struct PreviewPane: View {
         } else {
             switch item.kind {
             case .image:
-                if let name = item.imageFile, let url = model.store.persistence?.imageURL(for: name), let image = Thumbnails.image(at: url) {
+                if let name = item.imageFile, let url = model.store.persistence?.imageURL(for: name), let image = Thumbnails.image(at: url, maxPixels: Thumbnails.previewSize) {
                     Image(nsImage: image)
                         .resizable()
                         .scaledToFit()
