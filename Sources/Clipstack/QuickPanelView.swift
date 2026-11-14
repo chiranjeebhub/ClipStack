@@ -229,7 +229,8 @@ private struct PreviewPane: View {
     }
 
     private func toolbar(for item: ClipItem) -> some View {
-        HStack(spacing: 4) {
+        let hasItemActions = item.kind == .image || item.isEditable
+        return HStack(spacing: 6) {
             Text(item.kind.label.uppercased())
                 .font(.system(size: 11, weight: .semibold))
                 .foregroundStyle(.secondary)
@@ -237,48 +238,49 @@ private struct PreviewPane: View {
                 .padding(.vertical, 3)
                 .background(RoundedRectangle(cornerRadius: 5).fill(Color.primary.opacity(0.08)))
             Spacer()
+            // What this kind of item can do, spelled out, then pin and delete as icons.
             if item.kind == .image {
                 Button { model.copyText(from: item) } label: {
-                    Image(systemName: "text.viewfinder")
+                    PreviewActionLabel(title: "Copy Text", systemImage: "text.viewfinder")
                 }
                 .disabled(item.recognizedText == "")
-                .help(item.recognizedText == "" ? "No text found in this image" : "Copy Text from Image")
-                .accessibilityLabel("Copy Text from Image")
-            }
-            if item.kind == .image {
+                .help(item.recognizedText == "" ? "No text found in this image" : "Copy the text in this image")
                 Button { model.saveImage(item) } label: {
-                    Image(systemName: "square.and.arrow.down")
+                    PreviewActionLabel(title: "Save", systemImage: "square.and.arrow.down")
                 }
                 .help("Save Image…")
-                .accessibilityLabel("Save Image")
             }
-            Button { model.togglePin(item) } label: {
-                Image(systemName: item.isPinned ? "pin.fill" : "pin")
-            }
-            .help(item.isPinned ? "Unpin (⌘P)" : "Pin (⌘P)")
-            .accessibilityLabel(item.isPinned ? "Unpin" : "Pin")
-            if [.text, .code, .link, .color].contains(item.kind) {
+            if item.isEditable {
+                let editing = model.editingID == item.id
                 Button {
-                    if model.editingID == item.id {
+                    if editing {
                         saveDraft(for: item)
                     } else {
                         draft = item.text ?? ""
                         model.editingID = item.id
                     }
                 } label: {
-                    Image(systemName: model.editingID == item.id ? "checkmark" : "pencil")
+                    PreviewActionLabel(title: editing ? "Done" : "Edit", systemImage: editing ? "checkmark" : "pencil")
                 }
-                .help(model.editingID == item.id ? "Save" : "Edit (⌘E)")
-                .accessibilityLabel(model.editingID == item.id ? "Save" : "Edit")
+                .help(editing ? "Save changes" : "Edit (⌘E)")
             }
+            if hasItemActions {
+                Divider().frame(height: 16).padding(.horizontal, 2)
+            }
+            Button { model.togglePin(item) } label: {
+                PreviewActionLabel(systemImage: item.isPinned ? "pin.fill" : "pin")
+            }
+            .buttonStyle(PreviewActionStyle(tone: item.isPinned ? .active : .normal))
+            .help(item.isPinned ? "Unpin (⌘P)" : "Pin (⌘P)")
+            .accessibilityLabel(item.isPinned ? "Unpin" : "Pin")
             Button { model.delete(item) } label: {
-                Image(systemName: "trash")
+                PreviewActionLabel(systemImage: "trash")
             }
+            .buttonStyle(PreviewActionStyle(tone: .destructive))
             .help("Delete (⌘⌫)")
             .accessibilityLabel("Delete")
         }
-        .buttonStyle(.borderless)
-        .foregroundStyle(.secondary)
+        .buttonStyle(PreviewActionStyle())
         .onChange(of: model.editingID) { _, id in
             if id == item.id { draft = item.text ?? "" }
         }
@@ -461,4 +463,65 @@ private struct PinnedToggle: View {
         .accessibilityLabel("Pinned only")
         .accessibilityAddTraits(isOn ? .isSelected : [])
     }
+}
+
+/// A preview action: an icon with an optional label, sized to sit in a row of others.
+private struct PreviewActionLabel: View {
+    var title: String?
+    let systemImage: String
+
+    var body: some View {
+        HStack(spacing: 5) {
+            Image(systemName: systemImage)
+                .font(.system(size: 12, weight: .medium))
+                .frame(width: 14)
+            if let title {
+                Text(title).font(.system(size: 12, weight: .medium))
+            }
+        }
+        .padding(.horizontal, title == nil ? 0 : 9)
+        .frame(minWidth: 28, minHeight: 26)
+    }
+}
+
+/// Soft rounded buttons for the preview's actions. Pinned shows in the accent colour, and delete
+/// turns red under the pointer.
+private struct PreviewActionStyle: ButtonStyle {
+    enum Tone { case normal, active, destructive }
+    var tone: Tone = .normal
+
+    func makeBody(configuration: Configuration) -> some View {
+        StyledButton(configuration: configuration, tone: tone)
+    }
+
+    private struct StyledButton: View {
+        let configuration: ButtonStyleConfiguration
+        let tone: Tone
+        @Environment(\.isEnabled) private var isEnabled
+        @State private var hovering = false
+
+        var body: some View {
+            let danger = tone == .destructive && hovering && isEnabled
+            let shape = RoundedRectangle(cornerRadius: 7, style: .continuous)
+            configuration.label
+                .foregroundStyle(danger ? Color.red : tone == .active ? Color.accentColor : Color.primary.opacity(0.85))
+                .background(shape.fill(fill(danger: danger)))
+                .overlay(shape.strokeBorder(danger ? Color.red.opacity(0.35) : Color.primary.opacity(0.08)))
+                .contentShape(shape)
+                .opacity(isEnabled ? 1 : 0.4)
+                .onHover { hovering = $0 }
+        }
+
+        private func fill(danger: Bool) -> Color {
+            if danger { return Color.red.opacity(0.15) }
+            if tone == .active { return Color.accentColor.opacity(0.18) }
+            let base = hovering && isEnabled ? 0.12 : 0.06
+            return Color.primary.opacity(configuration.isPressed ? base + 0.06 : base)
+        }
+    }
+}
+
+private extension ClipItem {
+    /// Items whose text can be edited in place.
+    var isEditable: Bool { [.text, .code, .link, .color].contains(kind) }
 }
