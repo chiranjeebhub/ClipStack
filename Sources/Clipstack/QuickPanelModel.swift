@@ -7,7 +7,11 @@ import Observation
 @Observable
 final class QuickPanelModel {
     let store: HistoryStore
-    var query = "" { didSet { selectFirstIfNeeded() } }
+    /// What the search field shows. It changes on every keystroke; `query`, which filters the list,
+    /// follows it a moment later, so a typed letter appears before the list is searched and redrawn.
+    var searchText = "" { didSet { scheduleQuery() } }
+    private(set) var query = "" { didSet { selectFirstIfNeeded() } }
+    @ObservationIgnored private var pendingQuery: Task<Void, Never>?
     var filter: HistoryFilter = .all { didSet { selectFirstIfNeeded() } }
     var pinnedOnly = false { didSet { selectFirstIfNeeded() } }
     var selectedID: ClipItem.ID? {
@@ -88,8 +92,28 @@ final class QuickPanelModel {
         currentSnapshot.quickIndices[item.id]
     }
 
+    private func scheduleQuery() {
+        pendingQuery?.cancel()
+        guard searchText != query else { return }
+        // Clearing the field shows everything again at once.
+        guard !searchText.isEmpty else { return applySearch() }
+        pendingQuery = Task { [weak self] in
+            try? await Task.sleep(for: .milliseconds(60))
+            guard !Task.isCancelled else { return }
+            self?.applySearch()
+        }
+    }
+
+    /// Filters the list by what's in the search field now, without waiting.
+    private func applySearch() {
+        pendingQuery?.cancel()
+        pendingQuery = nil
+        if query != searchText { query = searchText }
+    }
+
     func prepareForShowing() {
-        query = ""
+        searchText = ""
+        applySearch()
         filter = .all
         pinnedOnly = false
         editingID = nil
@@ -163,6 +187,10 @@ final class QuickPanelModel {
         filter = next ?? .all
     }
 
+    private static let listKeys: Set<Int> = [
+        kVK_DownArrow, kVK_UpArrow, kVK_Return, kVK_ANSI_KeypadEnter, kVK_Tab, kVK_LeftArrow, kVK_RightArrow,
+    ]
+
     /// Returns true when the key was handled and should not reach the search field.
     func handleKey(_ event: NSEvent) -> Bool {
         let flags = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
@@ -174,6 +202,9 @@ final class QuickPanelModel {
             }
             return false
         }
+
+        // A key that acts on the list must see the search just typed, not the one before it.
+        if flags.contains(.command) || Self.listKeys.contains(Int(event.keyCode)) { applySearch() }
 
         switch Int(event.keyCode) {
         case kVK_DownArrow:
@@ -192,7 +223,7 @@ final class QuickPanelModel {
             cycleFilter(forward: !flags.contains(.shift))
             return true
         // ←/→ switch filters while the search field is empty; once there's text they move the caret.
-        case kVK_LeftArrow where query.isEmpty, kVK_RightArrow where query.isEmpty:
+        case kVK_LeftArrow where searchText.isEmpty, kVK_RightArrow where searchText.isEmpty:
             cycleFilter(forward: Int(event.keyCode) == kVK_RightArrow)
             return true
         case kVK_Delete where flags.contains(.command):
@@ -215,7 +246,7 @@ final class QuickPanelModel {
         case "p":
             togglePin()
             return true
-        case "c" where query.isEmpty:
+        case "c" where searchText.isEmpty:
             if let item = selectedItem { copy(item) }
             return true
         case "e":

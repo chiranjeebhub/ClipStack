@@ -32,7 +32,7 @@ struct QuickPanelView: View {
             Image(systemName: "magnifyingglass")
                 .font(.system(size: 17))
                 .foregroundStyle(.secondary)
-            TextField("Search clipboard history", text: $model.query)
+            TextField("Search clipboard history", text: $model.searchText)
                 .textFieldStyle(.plain)
                 .font(.system(size: 20))
                 .focused($searchFocused)
@@ -87,7 +87,7 @@ private struct HistoryList: View {
                                 .padding(.top, 8)
                                 .padding(.bottom, 3)
                             ForEach(section.items) { item in
-                                HistoryRow(model: model, item: item)
+                                HistoryRow(model: model, item: item, quickIndex: model.quickIndex(of: item))
                                     .id(item.id)
                             }
                         }
@@ -131,6 +131,9 @@ private struct EmptyHistory: View {
 private struct HistoryRow: View {
     let model: QuickPanelModel
     let item: ClipItem
+    /// Passed in rather than read from the model, so a row redraws only when its own badge changes,
+    /// not on every keystroke.
+    let quickIndex: Int?
 
     private var selected: Bool { model.selectedID == item.id }
 
@@ -148,7 +151,7 @@ private struct HistoryRow: View {
                     .accessibilityLabel("Pinned")
             }
             VStack(alignment: .trailing, spacing: 3) {
-                if let index = model.quickIndex(of: item) {
+                if let index = quickIndex {
                     Text("⌘\(index)")
                         .font(.system(size: 11).monospacedDigit())
                 }
