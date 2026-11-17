@@ -4,7 +4,17 @@ import Observation
 @Observable
 public final class HistoryStore {
     /// Newest first.
-    public private(set) var items: [ClipItem] = []
+    public private(set) var items: [ClipItem] = [] {
+        didSet {
+            revision &+= 1
+            searchText.removeAll(keepingCapacity: true)
+        }
+    }
+    /// Goes up on every change to `items`, so views can cache what they derive from them.
+    public private(set) var revision = 0
+    /// Lowercased search text per item, built the first time a search needs it. Lowercasing every
+    /// item's full text on each keystroke made typing in the search field lag with a long history.
+    @ObservationIgnored private var searchText: [ClipItem.ID: String] = [:]
     /// Maximum number of unpinned items kept.
     public var maxItems: Int = 1000 { didSet { pruneAndSave() } }
     public var retention: Retention = .month { didSet { pruneAndSave() } }
@@ -206,9 +216,16 @@ public final class HistoryStore {
         return items.filter { item in
             guard filter.matches(item), !pinnedOnly || item.isPinned else { return false }
             guard !terms.isEmpty else { return true }
-            let haystack = item.searchableText.lowercased()
+            let haystack = lowercasedSearchText(for: item)
             return terms.allSatisfy { haystack.contains($0) }
         }
+    }
+
+    private func lowercasedSearchText(for item: ClipItem) -> String {
+        if let cached = searchText[item.id] { return cached }
+        let text = item.searchableText.lowercased()
+        searchText[item.id] = text
+        return text
     }
 
     // MARK: - Housekeeping

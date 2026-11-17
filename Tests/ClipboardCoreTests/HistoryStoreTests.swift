@@ -303,4 +303,16 @@ final class HistoryStoreTests: XCTestCase {
         store.add(ClipItem(kind: .image, imageFile: "a.png", createdAt: now, contentHash: "image:a"))
         XCTAssertEqual(store.items[0].recognizedText, "Invoice 4021")
     }
+
+    func testSearchSeesEditsAfterAnEarlierSearch() {
+        let store = makeStore()
+        store.add(text("draft"))
+        let id = store.items[0].id
+        let revision = store.revision
+        XCTAssertEqual(store.filtered(query: "draft").count, 1)
+        store.updateText(id: id, text: "final copy")
+        XCTAssertGreaterThan(store.revision, revision)
+        XCTAssertEqual(store.filtered(query: "draft").count, 0)
+        XCTAssertEqual(store.filtered(query: "final").map(\.id), [id])
+    }
 }

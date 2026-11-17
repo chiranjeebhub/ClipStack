@@ -209,6 +209,9 @@ extension HistoryRow {
 
 @MainActor
 private struct PreviewPane: View {
+    /// Longest text the preview lays out.
+    static let previewLimit = 20_000
+
     @Bindable var model: QuickPanelModel
     @State private var draft = ""
 
@@ -345,14 +348,26 @@ private struct PreviewPane: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
             case .text, .code, .link:
+                let text = item.text ?? ""
+                let cut = text.index(text.startIndex, offsetBy: Self.previewLimit, limitedBy: text.endIndex) ?? text.endIndex
+                let isCut = cut < text.endIndex
                 ScrollView {
-                    Text(item.text ?? "")
-                        .font(.system(size: 12.5, design: item.kind == .code ? .monospaced : .default))
-                        .lineSpacing(3)
-                        .textSelection(.enabled)
-                        .frame(maxWidth: .infinity, alignment: .topLeading)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 14)
+                    VStack(alignment: .leading, spacing: 10) {
+                        // Laying out a very long copy (a log, a whole file) took seconds, and it happened
+                        // again each time a search moved the selection onto it. Paste still uses all of it.
+                        Text(isCut ? String(text[..<cut]) : text)
+                            .font(.system(size: 12.5, design: item.kind == .code ? .monospaced : .default))
+                            .lineSpacing(3)
+                            .textSelection(.enabled)
+                        if isCut {
+                            Text("Preview shows the first \(Self.previewLimit.formatted()) characters.")
+                                .font(.system(size: 11))
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .topLeading)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 14)
                 }
                 .background(box.fill(Color(nsColor: .textBackgroundColor).opacity(0.5)))
                 .overlay(box.strokeBorder(Color.primary.opacity(0.08)))

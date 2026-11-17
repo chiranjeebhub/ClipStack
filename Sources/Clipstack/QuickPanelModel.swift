@@ -37,14 +37,55 @@ final class QuickPanelModel {
         self.store = store
     }
 
-    var visibleItems: [ClipItem] { store.filtered(filter, pinnedOnly: pinnedOnly, query: query) }
-    var sections: [HistorySection] { HistorySection.group(visibleItems, now: now) }
+    /// What the list shows, worked out once per change to the history, search or filters. Every
+    /// row asks for its ⌘1–9 badge, and each of those asks used to filter the whole history again,
+    /// so a single keystroke searched it dozens of times.
+    private struct Snapshot {
+        var revision: Int
+        var query: String
+        var filter: HistoryFilter
+        var pinnedOnly: Bool
+        var now: Date
+        var items: [ClipItem]
+        var quickIndices: [ClipItem.ID: Int]
+        var sections: [HistorySection]?
+    }
+    @ObservationIgnored private var snapshot: Snapshot?
+
+    private var currentSnapshot: Snapshot {
+        // Reading these registers the observation that redraws the panel when any of them change.
+        let revision = store.revision, query = self.query, filter = self.filter, pinnedOnly = self.pinnedOnly, now = self.now
+        if let snapshot, snapshot.revision == revision, snapshot.query == query, snapshot.filter == filter,
+           snapshot.pinnedOnly == pinnedOnly, snapshot.now == now {
+            return snapshot
+        }
+        let items = store.filtered(filter, pinnedOnly: pinnedOnly, query: query)
+        var quickIndices: [ClipItem.ID: Int] = [:]
+        for (offset, item) in items.prefix(9).enumerated() { quickIndices[item.id] = offset + 1 }
+        let fresh = Snapshot(
+            revision: revision, query: query, filter: filter, pinnedOnly: pinnedOnly, now: now,
+            items: items, quickIndices: quickIndices
+        )
+        snapshot = fresh
+        return fresh
+    }
+
+    var visibleItems: [ClipItem] { currentSnapshot.items }
+
+    var sections: [HistorySection] {
+        var current = currentSnapshot
+        if let sections = current.sections { return sections }
+        let sections = HistorySection.group(current.items, now: now)
+        current.sections = sections
+        snapshot = current
+        return sections
+    }
+
     var selectedItem: ClipItem? { store.item(id: selectedID) }
 
     /// Position of an item among the visible ones, for its ⌘1–9 badge.
     func quickIndex(of item: ClipItem) -> Int? {
-        guard let index = visibleItems.prefix(9).firstIndex(where: { $0.id == item.id }) else { return nil }
-        return index + 1
+        currentSnapshot.quickIndices[item.id]
     }
 
     func prepareForShowing() {
