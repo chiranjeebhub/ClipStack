@@ -63,7 +63,14 @@ final class QuickPanelModel {
            snapshot.pinnedOnly == pinnedOnly, snapshot.now == now {
             return snapshot
         }
-        let items = store.filtered(filter, pinnedOnly: pinnedOnly, query: query)
+        // Typing more of the same search can only remove matches, so search the last result rather
+        // than the whole history.
+        var candidates: [ClipItem]?
+        if let snapshot, snapshot.revision == revision, snapshot.filter == filter, snapshot.pinnedOnly == pinnedOnly,
+           !snapshot.query.isEmpty, query.lowercased().hasPrefix(snapshot.query.lowercased()) {
+            candidates = snapshot.items
+        }
+        let items = store.filtered(filter, pinnedOnly: pinnedOnly, query: query, in: candidates)
         var quickIndices: [ClipItem.ID: Int] = [:]
         for (offset, item) in items.prefix(9).enumerated() { quickIndices[item.id] = offset + 1 }
         let fresh = Snapshot(

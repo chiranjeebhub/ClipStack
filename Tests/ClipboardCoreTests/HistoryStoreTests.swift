@@ -315,4 +315,17 @@ final class HistoryStoreTests: XCTestCase {
         XCTAssertEqual(store.filtered(query: "draft").count, 0)
         XCTAssertEqual(store.filtered(query: "final").map(\.id), [id])
     }
+
+    func testSearchMatchesBytesCaseInsensitivelyAndNarrows() {
+        let store = makeStore()
+        store.add(text("Café Crème recipe"))
+        store.add(text("naïve résumé"))
+        store.add(text("plain words"))
+        XCTAssertEqual(store.filtered(query: "CAFÉ").map(\.text), ["Café Crème recipe"])
+        XCTAssertEqual(store.filtered(query: "résumé naïve").map(\.text), ["naïve résumé"])
+        XCTAssertEqual(store.filtered(query: "e").count, 3)
+        let earlier = store.filtered(query: "r")
+        XCTAssertEqual(store.filtered(query: "re", in: earlier).map(\.text), store.filtered(query: "re").map(\.text))
+        XCTAssertEqual(store.filtered(query: "zzz").count, 0)
+    }
 }

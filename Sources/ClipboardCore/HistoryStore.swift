@@ -12,9 +12,11 @@ public final class HistoryStore {
     }
     /// Goes up on every change to `items`, so views can cache what they derive from them.
     public private(set) var revision = 0
-    /// Lowercased search text per item, built the first time a search needs it. Lowercasing every
-    /// item's full text on each keystroke made typing in the search field lag with a long history.
-    @ObservationIgnored private var searchText: [ClipItem.ID: String] = [:]
+    /// Lowercased search text per item as UTF-8 bytes, built the first time a search needs it.
+    /// Lowercasing every item's full text on each keystroke made typing lag with a long history, and
+    /// matching with `String.contains` still walked it character by character; bytes are compared
+    /// with `memmem`, which is many times faster.
+    @ObservationIgnored private var searchText: [ClipItem.ID: [UInt8]] = [:]
     /// Maximum number of unpinned items kept.
     public var maxItems: Int = 1000 { didSet { pruneAndSave() } }
     public var retention: Retention = .month { didSet { pruneAndSave() } }
@@ -211,21 +213,34 @@ public final class HistoryStore {
         if !pruned.isEmpty { save(deleted: pruned) }
     }
 
-    public func filtered(_ filter: HistoryFilter = .all, pinnedOnly: Bool = false, query: String = "") -> [ClipItem] {
-        let terms = query.lowercased().split(whereSeparator: \.isWhitespace)
-        return items.filter { item in
+    /// Items matching a type filter, the pinned toggle and every word of a search, newest first.
+    /// Pass `candidates` (an earlier result) to search only within it, when the new search can only
+    /// narrow that result down.
+    public func filtered(
+        _ filter: HistoryFilter = .all, pinnedOnly: Bool = false, query: String = "", in candidates: [ClipItem]? = nil
+    ) -> [ClipItem] {
+        let terms = query.lowercased().split(whereSeparator: \.isWhitespace).map { Array($0.utf8) }
+        return (candidates ?? items).filter { item in
             guard filter.matches(item), !pinnedOnly || item.isPinned else { return false }
             guard !terms.isEmpty else { return true }
             let haystack = lowercasedSearchText(for: item)
-            return terms.allSatisfy { haystack.contains($0) }
+            return terms.allSatisfy { Self.bytes(haystack, contain: $0) }
         }
     }
 
-    private func lowercasedSearchText(for item: ClipItem) -> String {
+    private func lowercasedSearchText(for item: ClipItem) -> [UInt8] {
         if let cached = searchText[item.id] { return cached }
-        let text = item.searchableText.lowercased()
+        let text = Array(item.searchableText.lowercased().utf8)
         searchText[item.id] = text
         return text
+    }
+
+    private static func bytes(_ haystack: [UInt8], contain needle: [UInt8]) -> Bool {
+        guard !needle.isEmpty else { return true }
+        guard haystack.count >= needle.count else { return false }
+        return haystack.withUnsafeBytes { h in
+            needle.withUnsafeBytes { n in memmem(h.baseAddress, h.count, n.baseAddress, n.count) != nil }
+        }
     }
 
     // MARK: - Housekeeping
